@@ -1,0 +1,48 @@
+.navbar {
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(16,24,40,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.navbar__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+}
+.navbar__logo {
+  font-weight: 700;
+  color: #111827;
+  text-decoration: none;
+}
+.navbar__links {
+  list-style: none;
+  display: flex;
+  gap: 2rem; /* Hvor mye plass det er mellom lenkene */
+  margin: 0;
+  padding: 0;
+}
+.navbar__links a {
+  color: #111827;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem; 
+  border-radius: 6px;
+}
+.navbar__links a:hover,
+.navbar__links a:focus {
+  background: rgba(100,108,255,0.08);
+  outline: none;
+}
+.navbar__actions button {
+  background: #646cff;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+}

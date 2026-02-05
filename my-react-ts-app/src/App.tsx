@@ -1,9 +1,18 @@
 import './App.css'
-import HomesView from './homelistfiles/HomesView'
+import NavBar from './components/NavBar'
+import Home from './pages/Home'
 
 function App() {
+  const links = [
+    { label: 'Boliger', to: '/properties' },
+    { label: 'Om', to: '/about' },
+  ]
+
   return (
-    <HomesView />
+    <>
+      <NavBar links={links} />
+      <Home />
+    </>
   )
 }
 

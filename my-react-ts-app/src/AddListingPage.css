@@ -1,0 +1,188 @@
+.page {
+    min-height: 100vh;
+    padding: 32px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  
+  .header {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  .header h1 {
+    margin: 0 0 6px 0;
+    font-size: 32px;
+  }
+  
+  .header p {
+    margin: 0;
+    opacity: 0.8;
+  }
+  
+  .content {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  @media (min-width: 900px) {
+    .content {
+      grid-template-columns: 1.2fr 1fr;
+      align-items: start;
+    }
+  }
+  
+  .card {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  
+  .card h2 {
+    margin: 0 0 14px 0;
+    font-size: 18px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  @media (min-width: 620px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .field.full {
+    grid-column: 1 / -1;
+  }
+  
+  label {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+  
+  input,
+  select,
+  textarea {
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.15);
+    padding: 10px 12px;
+    color: inherit;
+    outline: none;
+  }
+  
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+  
+  .error {
+    font-size: 12px;
+    color: #ff7a7a;
+  }
+  
+  .muted {
+    font-size: 12px;
+    opacity: 0.7;
+  }
+  
+  .hintRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  button {
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.06);
+    color: inherit;
+    cursor: pointer;
+  }
+  
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  button.primary {
+    background: rgba(255, 255, 255, 0.14);
+  }
+  
+  button.secondary {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  
+  .formInfo {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.75;
+  }
+  
+  .preview {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 12px;
+  }
+  
+  .label {
+    font-size: 13px;
+    opacity: 0.75;
+  }
+  
+  .value {
+    font-size: 14px;
+  }
+  
+  .submitted {
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-top: 14px;
+  }
+  
+  .code {
+    margin: 10px 0 0 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.25);
+    overflow: auto;
+    max-height: 280px;
+  }
