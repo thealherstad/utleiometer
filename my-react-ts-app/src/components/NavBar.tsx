@@ -1,3 +1,4 @@
+import '../style/NavBar.css'
 type LinkItem = { label: string; to: string }
 
 type Props = {
