@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import "./AddListingPage.css";
+import "../style/AddListingPage.css";
 
 const AREAS = [
   "Trondheim",
