@@ -1,5 +1,5 @@
 import './App.css'
-import HomesView from './components/HomesView'
+import HomesView from './homelistfiles/HomesView'
 
 function App() {
   return (
