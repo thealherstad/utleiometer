@@ -11,6 +11,18 @@ body {
   color: #111827;
 }
 
+.page-shell {
+  background: linear-gradient(180deg, #fbfbff 0%, #f7f7fb 100%);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: calc(100vh - 64px);
+  padding: 3rem 1rem;
+}
+
+.page-shell > * {
+  width: 100%;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -52,4 +64,3 @@ body {
   margin: 0 auto;
   padding: 2rem 1rem;
 }
-

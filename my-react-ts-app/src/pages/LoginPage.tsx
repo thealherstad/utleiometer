@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "../style/LoginPage.css";
 
 const LoginPage: React.FC = () => {
@@ -27,9 +28,10 @@ const LoginPage: React.FC = () => {
           Fortsett som gjest
         </button>
 
-        <button className="login-button secondary">
-          Registrer deg
-        </button>
+        <div className="login-register">
+          <span>Har du ikke bruker?</span>
+          <Link to="/registrer">Registrer deg</Link>
+        </div>
       </div>
     </div>
   );

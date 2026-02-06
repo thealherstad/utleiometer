@@ -2,10 +2,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: #e0e3e8;
+  min-height: 100%;
+  background-color: transparent;
   font-family: Arial, sans-serif;
   overflow-x: hidden;
+  width: 100%;
 }
 
 .login-card {
@@ -74,4 +75,18 @@
 .login-button.secondary:hover {
   background-color: #666;
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+}
+
+.login-register {
+  margin-top: 6px;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.login-register a {
+  color: #111827;
+  font-weight: 700;
+  text-decoration: underline;
 }
