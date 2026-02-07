@@ -1,28 +1,52 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import HomeList from './HomeList'
 import type { Home } from './HomeCard'
+import { getAllListings } from '../services/listingService'
 
 export default function HomesView() {
-  const homes: Home[] = [
-    { id: 1, title: 'Koselig leilighet', address: 'Trondheim', price: 12000, rating: 8, image: '' },
-    { id: 2, title: 'Stor enebolig', address: 'Oslo', price: 18000, rating: 9, image: '' },
-    { id: 3, title: 'Moderne rekkehus', address: 'Bergen', price: 14000, rating: 7, image: '' },
-    { id: 4, title: 'Luksus appartement', address: 'Stavanger', price: 16000, rating: 9, image: '' },
-    { id: 5, title: 'Rolig villa', address: 'Lillehammer', price: 15000, rating: 8, image: '' },
-    { id: 6, title: 'Sentral leilighet', address: 'Drammen', price: 11000, rating: 7, image: '' },
-    { id: 7, title: 'Stor familie enebolig', address: 'Moss', price: 16500, rating: 8, image: '' },
-    { id: 8, title: 'Moderne loft', address: 'Sandnes', price: 13000, rating: 8, image: '' },
-    { id: 9, title: 'Klassisk våningshus', address: 'Kristiansand', price: 14500, rating: 7, image: '' },
-    { id: 10, title: 'Minimalistisk leilighet', address: 'Ålesund', price: 11500, rating: 9, image: '' },
-    { id: 11, title: 'Charmerende landsted', address: 'Hamar', price: 10500, rating: 8, image: '' },
-    { id: 12, title: 'Moderne villa', address: 'Tromsø', price: 13500, rating: 8, image: '' },
-  ]
+  const [homes, setHomes] = useState<Home[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        setLoading(true)
+        const listings = await getAllListings()
+        
+        // Konverter Firestore-data til Home-type
+        const convertedHomes: Home[] = listings.map((listing, index) => ({
+          id: index + 1, // Bruk index som ID
+          title: listing.area, // Bruk "area" som tittel (f.eks. "Trondheim")
+          address: `${listing.address}${listing.city ? ', ' + listing.city : ''}`, // Kombinert adresse
+          price: 12000, // Standard pris for nå
+          rating: 8, // Standard rating for nå
+          image: '', // Tom bildeURL
+        }))
+        
+        console.log("Konverterte homes:", convertedHomes)
+        setHomes(convertedHomes)
+        setError(null)
+      } catch (err) {
+        console.error("Feil ved henting av boligene:", err)
+        setError("Kunne ikke hente boligene fra databasen")
+        setHomes([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchListings()
+  }, [])
 
   return (
     <>
       <h1>Boligoversikt</h1>
-      <HomeList homes={homes} />
+      {loading && <p>Laster boligene...</p>}
+      {error && <p style={{ color: 'red' }}>Feil: {error}</p>}
+      {!loading && homes.length === 0 && <p>Ingen boligene funnet. Legg inn en bolig først!</p>}
+      {!loading && homes.length > 0 && <HomeList homes={homes} />}
     </>
   )
 }

@@ -1,8 +1,9 @@
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "../firebase";
 
 // Type for bolig
 export type Listing = {
+  id: string;
   address: string;
   area: string;
   postalCode: string;
@@ -12,7 +13,7 @@ export type Listing = {
 };
 
 // Funksjon for å lagre ny bolig til Firestore
-export async function saveListing(listingData: Omit<Listing, "createdAt">) {
+export async function saveListing(listingData: Omit<Listing, "id" | "createdAt">) {
   try {
     console.log("Prøver å lagre listing:", listingData);
     console.log("db objekt:", db);
@@ -38,6 +39,34 @@ export async function saveListing(listingData: Omit<Listing, "createdAt">) {
       code: (error as any)?.code,
       full: error
     });
+    throw error;
+  }
+}
+
+// Funksjon for å hente alle boligene fra Firestore
+export async function getAllListings(): Promise<Listing[]> {
+  try {
+    console.log("📥 Henter alle boligene fra Firestore...");
+    const querySnapshot = await getDocs(collection(db, "listings"));
+    
+    const listings: Listing[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      listings.push({
+        id: doc.id,
+        address: data.address || "",
+        area: data.area || "",
+        postalCode: data.postalCode || "",
+        city: data.city || "",
+        notes: data.notes || "",
+        createdAt: data.createdAt || Timestamp.now(),
+      });
+    });
+    
+    console.log("✅ Hentet", listings.length, "boligene");
+    return listings;
+  } catch (error) {
+    console.error("❌ Feil ved henting av boligene:", error);
     throw error;
   }
 }
