@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import "../style/AddListingPage.css";
+import { saveListing } from "../services/listingService";
 
 const AREAS = [
   "Trondheim",
@@ -38,6 +39,9 @@ export default function AddListingPage() {
 
   const [touched, setTouched] = useState<TouchedState>({});
   const [submitted, setSubmitted] = useState<SubmittedState | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const errors = useMemo<ErrorsState>(() => {
     const e: ErrorsState = {};
@@ -70,8 +74,12 @@ export default function AddListingPage() {
     setTouched((prev) => ({ ...prev, [name]: true }));
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    console.log("=== handleSubmit kallt ===");
+    console.log("Form data før validering:", form);
+    console.log("isValid status:", isValid);
+    console.log("Errors:", errors);
 
     setTouched({
       address: true,
@@ -81,21 +89,60 @@ export default function AddListingPage() {
       notes: true,
     });
 
-    if (!isValid) return;
+    if (!isValid) {
+      console.log("❌ Form er IKKE valid - stopper her");
+      return;
+    }
 
-    setSubmitted({
-      ...form,
-      createdAt: new Date().toLocaleString(),
-    });
+    console.log("✅ Form er valid - starter lagring");
+    setIsLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
 
-    setForm({
-      address: "",
-      area: "",
-      postalCode: "",
-      city: "",
-      notes: "",
-    });
-    setTouched({});
+    try {
+      // Lagre til Firestore
+      console.log("Kaller saveListing med:", {
+        address: form.address,
+        area: form.area as string,
+        postalCode: form.postalCode,
+        city: form.city,
+        notes: form.notes,
+      });
+      
+      await saveListing({
+        address: form.address,
+        area: form.area as string,
+        postalCode: form.postalCode,
+        city: form.city,
+        notes: form.notes,
+      });
+
+      console.log("✅ saveListing fullført!");
+      // Vis suksessmelding
+      setSuccessMessage("Boligen er lagret!");
+      setSubmitted({
+        ...form,
+        createdAt: new Date().toLocaleString(),
+      });
+
+      // Nullstill skjemaet
+      setForm({
+        address: "",
+        area: "",
+        postalCode: "",
+        city: "",
+        notes: "",
+      });
+      setTouched({});
+
+      // Fjern suksessmelding etter 3 sekunder
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error) {
+      console.error("❌ FEIL ved lagring:", error);
+      setErrorMessage("Feil ved lagring av bolig. Prøv igjen.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -203,13 +250,18 @@ export default function AddListingPage() {
             </div>
 
             <div className="actions">
-              <button type="submit" className="primary" disabled={!isValid}>
-                Send inn
+              <button 
+                type="submit" 
+                className="primary" 
+                disabled={!isValid || isLoading}
+              >
+                {isLoading ? "Lagrer..." : "Send inn"}
               </button>
 
               <button
                 type="button"
                 className="secondary"
+                disabled={isLoading}
                 onClick={() => {
                   setForm({
                     address: "",
@@ -220,11 +272,21 @@ export default function AddListingPage() {
                   });
                   setTouched({});
                   setSubmitted(null);
+                  setSuccessMessage(null);
+                  setErrorMessage(null);
                 }}
               >
                 Nullstill
               </button>
             </div>
+
+            {successMessage && (
+              <p className="successMessage">{successMessage}</p>
+            )}
+
+            {errorMessage && (
+              <p className="errorMessage">{errorMessage}</p>
+            )}
 
             {!isValid && (
               <p className="formInfo">
