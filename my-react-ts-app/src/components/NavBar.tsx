@@ -1,5 +1,6 @@
 import '../style/navbar.css'
 import { Link, NavLink } from 'react-router-dom'
+import logo from "../assets/Logo.png";
 
 type LinkItem = { label: string; to: string }
 
@@ -13,7 +14,11 @@ export default function NavBar({ links }: Props) {
       <div className="navbar__inner">
         <div className="navbar__brand">
           <Link to="/" className="navbar__logo" aria-label="Hjem">
-            Utleiometer
+            <img
+            src={logo}
+            alt="Utleiometer"
+            className='logo-img'
+            />
           </Link>
         </div>
 
