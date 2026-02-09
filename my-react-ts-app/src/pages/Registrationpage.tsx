@@ -1,22 +1,33 @@
 import React, { useState } from 'react';
 import "../style/Registrationpage.css"; 
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase';
 
 const RegistrationPage: React.FC = () => {
     const [email, setEmail] = useState<string>('');
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
-    const handleSubmit = (event: React.FormEvent) => {
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        setError(null);
 
-        const registarationData = {
-            email,
-            username,
-            password
-        };
-        
-        console.log('Registerer bruker:', registarationData);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
 
+            console.log("Bruker registrert:", userCredential.user);
+            console.log("Brukernavn (ikke lagret enda):", username);
+
+        } catch (err: any) {
+            console.error("Registrering feilet:", err);
+            setError(err.message);
+        }
     };
 
     return (
@@ -62,10 +73,13 @@ const RegistrationPage: React.FC = () => {
                 </div>
 
                 <button type="submit">Registrer</button>
+
+                {error && <p className='error'>{error}</p>}
             </form>
         </div>
     </div>
     );
-};
+
+}; 
 
 export default RegistrationPage;
