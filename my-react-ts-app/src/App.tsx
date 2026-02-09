@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { auth } from "./firebase";
+import { Navigate } from "react-router-dom";
 
 
 
@@ -27,7 +28,16 @@ function App() {
     });
     return () => unsubscribe(); // cleanup
   }, []);
- 
+
+type ProtectedRouteProps = {
+  user: User | null;
+  children: React.ReactNode;
+};
+
+function ProtectedRoute({ user, children }: ProtectedRouteProps) {
+  if (!user) return <Navigate to="/logg-inn" replace />;
+  return <>{children}</>; // wrapper i fragment
+}
 
   return (
     <>
@@ -39,7 +49,16 @@ function App() {
           <Route path="/logg-inn" element={user ? <ProfilePage /> : <LoginPage />} />
           <Route path="/registrer" element={<RegistrationPage />} />
           <Route path="/legg-inn-bolig" element={<AddListingPage />} />
-          <Route path="/profil" element={<ProfilePage />} />
+          <Route
+  path="/profil"
+  element={
+    <ProtectedRoute user={user}>
+      <ProfilePage />
+    </ProtectedRoute>
+  }
+/>
+
+
         </Routes>
       </main>
     </>
