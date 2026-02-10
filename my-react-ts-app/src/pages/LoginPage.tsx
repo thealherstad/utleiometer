@@ -13,7 +13,7 @@ const LoginPage: React.FC = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/profil"); 
-    } catch (error) {
+    } catch {
       alert("Feil brukernavn eller passord");
     }
   };

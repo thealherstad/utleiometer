@@ -1,8 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, } from "../firebase";
-import { signOut } from "firebase/auth";
-import "../style/LoginPage.css"; // vi gjenbruker LoginPage-stilen
+import { auth } from "../firebase";
+import { deleteUser, signOut } from "firebase/auth";
+import "../style/LoginPage.css";
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -10,9 +10,34 @@ const ProfilePage: React.FC = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigate("/logg-inn"); // tilbake til login
-    } catch (error) {
+      navigate("/logg-inn");
+    } catch {
       alert("Noe gikk galt ved logout");
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    const confirmed = window.confirm(
+      "Er du sikker pa at du vil slette profilen din? Dette kan ikke angres."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert("Fant ingen innlogget bruker.");
+      return;
+    }
+
+    try {
+      await deleteUser(user);
+      await signOut(auth);
+      navigate("/logg-inn");
+    } catch {
+      alert("Noe gikk galt ved sletting av profilen");
     }
   };
 
@@ -36,6 +61,20 @@ const ProfilePage: React.FC = () => {
           onClick={handleLogout}
         >
           Logg ut
+        </button>
+
+        <button
+          className="login-button"
+          style={{
+            backgroundColor: "#b71c1c",
+            color: "white",
+            fontSize: "18px",
+            fontWeight: 700,
+            marginTop: "12px",
+          }}
+          onClick={handleDeleteProfile}
+        >
+          Slett profil
         </button>
       </div>
     </div>
