@@ -6,9 +6,11 @@ type LinkItem = { label: string; to: string }
 
 type Props = {
   links: LinkItem[]
+  user?: any;
 }
 
-export default function NavBar({ links }: Props) {
+export default function NavBar({ links, user }: Props)
+ {
   return (
     <header className="navbar" role="banner">
       <div className="navbar__inner">
@@ -41,12 +43,15 @@ export default function NavBar({ links }: Props) {
 
         <div className="navbar__actions">
           <Link
-            to="/logg-inn"
+            to="/profil"
             className="navbar__action"
-            aria-label="Profil"
+            style={user ? { backgroundColor: '#009999', color: 'white' } : {}}
           >
             Profil
           </Link>
+
+
+
         </div>
       </div>
     </header>
