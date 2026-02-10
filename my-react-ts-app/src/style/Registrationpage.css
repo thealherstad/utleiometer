@@ -1,0 +1,23 @@
+.page-center {
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.register-box {
+    padding: 2rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
