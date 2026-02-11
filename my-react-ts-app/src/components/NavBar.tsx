@@ -7,9 +7,11 @@ type LinkItem = { label: string; to: string }
 type Props = {
   links: LinkItem[]
   user?: any;
+  isAdmin?: boolean;
 }
 
-export default function NavBar({ links, user }: Props)
+export default function NavBar({ links, user, isAdmin }: Props)
+
  {
   return (
     <header className="navbar" role="banner">
@@ -45,7 +47,14 @@ export default function NavBar({ links, user }: Props)
           <Link
             to="/profil"
             className="navbar__action"
-            style={user ? { backgroundColor: '#009999', color: 'white' } : {}}
+            style={
+              user
+               ? isAdmin
+                 ? { backgroundColor: '#0b5ed7', color: 'white' } 
+                 : { backgroundColor: '#009999', color: 'white' } 
+              : {}
+            }
+
           >
             Profil
           </Link>
