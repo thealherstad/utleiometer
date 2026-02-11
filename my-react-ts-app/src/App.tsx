@@ -22,11 +22,20 @@ function App() {
   ]
   const [user, setUser] = useState<User | null>(null);
 
+  const adminEmails = [
+    "admin1@utleiometer.no",
+    "admin2@utleiometer.no",
+    "admin3@utleiometer.no",
+    "admin4@utleiometer.no",
+    "admin5@utleiometer.no",
+  ];
+ const isAdmin = !!user && adminEmails.includes(user.email ?? "");
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); // null hvis ikke logget inn
+      setUser(currentUser); 
     });
-    return () => unsubscribe(); // cleanup
+    return () => unsubscribe(); 
   }, []);
 
 type ProtectedRouteProps = {
@@ -36,12 +45,12 @@ type ProtectedRouteProps = {
 
 function ProtectedRoute({ user, children }: ProtectedRouteProps) {
   if (!user) return <Navigate to="/logg-inn" replace />;
-  return <>{children}</>; // wrapper i fragment
+  return <>{children}</>; 
 }
 
   return (
     <>
-      <NavBar links={links} user = {user} />
+      <NavBar links={links} user={user} isAdmin={isAdmin} />
       <main className="page-shell">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -57,8 +66,6 @@ function ProtectedRoute({ user, children }: ProtectedRouteProps) {
     </ProtectedRoute>
   }
 />
-
-
         </Routes>
       </main>
     </>
