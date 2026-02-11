@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import LoginPage from './pages/LoginPage'
 import RegistrationPage from './pages/Registrationpage'
 import AddListingPage from './pages/AddListingPage'
+import ReviewPage from './pages/ReviewPage'
 import HomesView from './homelistfiles/HomesView'
 import { Route, Routes } from 'react-router-dom'
 import ProfilePage from "./pages/ProfilePage";
@@ -58,6 +59,7 @@ function ProtectedRoute({ user, children }: ProtectedRouteProps) {
           <Route path="/logg-inn" element={user ? <ProfilePage /> : <LoginPage />} />
           <Route path="/registrer" element={<RegistrationPage />} />
           <Route path="/legg-inn-bolig" element={<AddListingPage />} />
+          <Route path="/review/:id" element={<ReviewPage />} />
           <Route
   path="/profil"
   element={
