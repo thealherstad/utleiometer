@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import "../style/Registrationpage.css"; 
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -9,6 +10,7 @@ const RegistrationPage: React.FC = () => {
     const [password, setPassword] = useState<string>('');
 
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -23,58 +25,63 @@ const RegistrationPage: React.FC = () => {
 
             console.log("Bruker registrert:", userCredential.user);
             console.log("Brukernavn (ikke lagret enda):", username);
+            navigate('/profil');
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Registrering feilet:", err);
-            setError(err.message);
+            const message = err instanceof Error ? err.message : "Noe gikk galt under registrering";
+            setError(message);
         }
     };
 
     return (
-        <div className ="page-center">
-            <div className="register-box">
-            <h2>Registrer bruker</h2>
+        <div className="register-wrapper">
+            <div className="register-card">
+            <h2 className="register-title">Registrer bruker</h2>
 
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label>
-                        E-post:
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </label>
-                </div>
+                <input
+                    type="email"
+                    placeholder="E-post"
+                    className="register-input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
 
-                <div>
-                    <label>
-                        Brukernavn:
-                        <input
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                    </label>
-                </div>
+                <input
+                    type="text"
+                    placeholder="Brukernavn"
+                    className="register-input"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
 
-                <div>
-                    <label>
-                        Passord:
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </label>
-                </div>
+                <input
+                    type="password"
+                    placeholder="Passord"
+                    className="register-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
 
-                <button type="submit">Registrer</button>
+                <button className="register-button primary" type="submit">Registrer</button>
+                <button
+                    className="register-button secondary"
+                    type="button"
+                    onClick={() => navigate('/login')}
+                >
+                    Tilbake til innlogging
+                </button>
 
                 {error && <p className='error'>{error}</p>}
+
+                <div className="register-login">
+                    <span>Har du allerede bruker?</span>
+                    <Link to="/login">Logg inn</Link>
+                </div>
             </form>
         </div>
     </div>
