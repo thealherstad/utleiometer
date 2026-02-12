@@ -22,7 +22,7 @@ export default function HomesView() {
           address: `${listing.address}${listing.city ? ', ' + listing.city : ''}`, // Kombinert adresse
           price: 12000, // Standard pris for nå
           rating: 8, // Standard rating for nå
-          image: '', // Tom bildeURL
+          image: listing.imageUrl || '', 
         }))
         
         console.log("Konverterte homes:", convertedHomes)
