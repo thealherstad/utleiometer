@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import "../style/Registrationpage.css"; 
+import "../style/Registrationpage.css";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 
@@ -71,16 +71,16 @@ const RegistrationPage: React.FC = () => {
                 <button
                     className="register-button secondary"
                     type="button"
-                    onClick={() => navigate('/login')}
+                    onClick={() => navigate('/logg-inn')}
                 >
                     Tilbake til innlogging
                 </button>
 
-                {error && <p className='error'>{error}</p>}
+                {error && <p className="error">{error}</p>}
 
                 <div className="register-login">
                     <span>Har du allerede bruker?</span>
-                    <Link to="/login">Logg inn</Link>
+                    <Link to="/logg-inn">Logg inn</Link>
                 </div>
             </form>
         </div>
