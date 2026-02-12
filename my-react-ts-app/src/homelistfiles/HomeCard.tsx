@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import './HomeList.css'
+import logo from '../assets/logo.png'
 
 export type Home = {
   id: number
@@ -25,7 +26,12 @@ export default function HomeCard({ home }: Props) {
           <p className="price">Leiepris: {home.price.toLocaleString()} kr/mnd</p>
           <p className="rating">Rating: {home.rating}/10</p>
         </div>
-        <img src={home.image} alt={home.title} className="home-image" />
+         <img
+          src={home.image || logo}
+          alt={home.title}
+          className="home-image"
+          style={{ objectFit: home.image ? 'cover' : 'contain' }}
+        />
       </div>
     </Link>
   )
