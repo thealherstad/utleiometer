@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import "../style/Registrationpage.css";
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase';
 
 const RegistrationPage: React.FC = () => {
@@ -23,8 +23,10 @@ const RegistrationPage: React.FC = () => {
                 password
             );
 
-            console.log("Bruker registrert:", userCredential.user);
-            console.log("Brukernavn (ikke lagret enda):", username);
+            await updateProfile(userCredential.user, {
+                displayName: username,
+            });
+
             navigate('/profil');
 
         } catch (err: unknown) {
