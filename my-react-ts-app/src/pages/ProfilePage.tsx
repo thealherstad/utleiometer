@@ -5,6 +5,7 @@ import { deleteUser, onAuthStateChanged, signOut, updateProfile } from "firebase
 import type { User } from "firebase/auth";
 import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import "../style/LoginPage.css";
+import "../style/ProfilePage.css";
 
 type UserReview = {
   id: string;
@@ -307,25 +308,24 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="login-wrapper">
-      <div className="login-card" style={{ maxWidth: "640px" }}>
+      <div className="login-card profile-card">
         <h2 className="login-title">Profil</h2>
 
-        <div style={{ marginBottom: "24px", textAlign: "left" }}>
-          <p style={{ margin: "0 0 8px 0" }}>
+        <div className="profile-user-info">
+          <p className="profile-user-row">
             <strong>Brukernavn:</strong> {currentUser?.displayName || "Ikke satt"}
           </p>
-          <p style={{ margin: 0 }}>
+          <p className="profile-user-row profile-user-row-last">
             <strong>E-post:</strong> {currentUser?.email || "Ikke tilgjengelig"}
           </p>
         </div>
 
-        <div style={{ width: "100%", textAlign: "left", marginBottom: "24px" }}>
+        <div className="profile-username-section">
           {!isEditingUsername && (
             <button
-              className="login-button secondary"
+              className="login-button secondary profile-inline-button profile-inline-button-small"
               type="button"
               onClick={() => setIsEditingUsername(true)}
-              style={{ width: "auto", padding: "8px 12px", marginBottom: 0 }}
             >
               Rediger brukernavn
             </button>
@@ -334,31 +334,28 @@ const ProfilePage: React.FC = () => {
           {isEditingUsername && (
             <form onSubmit={handleUsernameUpdate}>
               <input
-                className="login-input"
+                className="login-input profile-username-input"
                 type="text"
                 placeholder="Nytt brukernavn"
                 value={usernameInput}
                 onChange={(e) => setUsernameInput(e.target.value)}
                 required
-                style={{ marginBottom: "10px" }}
               />
-              <div style={{ display: "flex", gap: "8px" }}>
+              <div className="profile-inline-actions">
                 <button
-                  className="login-button primary"
+                  className="login-button primary profile-inline-button"
                   type="submit"
                   disabled={savingUsername}
-                  style={{ width: "auto", padding: "10px 14px", marginBottom: 0 }}
                 >
                   {savingUsername ? "Lagrer..." : "Lagre"}
                 </button>
                 <button
-                  className="login-button secondary"
+                  className="login-button secondary profile-inline-button"
                   type="button"
                   onClick={() => {
                     setUsernameInput(currentUser?.displayName || "");
                     setIsEditingUsername(false);
                   }}
-                  style={{ width: "auto", padding: "10px 14px", marginBottom: 0 }}
                 >
                   Avbryt
                 </button>
@@ -367,16 +364,8 @@ const ProfilePage: React.FC = () => {
           )}
         </div>
 
-        <div
-          style={{
-            width: "100%",
-            textAlign: "left",
-            marginBottom: "24px",
-            borderTop: "1px solid #ddd",
-            paddingTop: "16px",
-          }}
-        >
-          <h3 style={{ marginTop: 0 }}>Mine anmeldelser</h3>
+        <div className="profile-reviews-section">
+          <h3 className="profile-section-title">Mine anmeldelser</h3>
 
           {loadingReviews && <p>Laster anmeldelser...</p>}
 
@@ -393,30 +382,25 @@ const ProfilePage: React.FC = () => {
                   setIsEditingReview(false);
                   setIsReviewModalOpen(true);
                 }}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  padding: "12px",
-                  marginBottom: "10px",
-                  cursor: "pointer",
-                  backgroundColor: selectedReviewId === review.id ? "#f3f4f6" : "white",
-                }}
+                className={`profile-review-card ${
+                  selectedReviewId === review.id ? "profile-review-card-selected" : ""
+                }`}
               >
-                <p style={{ margin: "0 0 6px 0" }}>
+                <p className="profile-review-line">
                   <strong>Bolig:</strong> {review.housingId || "Ukjent"}
                 </p>
-                <p style={{ margin: "0 0 6px 0" }}>
+                <p className="profile-review-line">
                   <strong>Generelt score:</strong> {review.overallScore ?? "-"}/5
                 </p>
-                <p style={{ margin: "0 0 6px 0" }}>
+                <p className="profile-review-line">
                   <strong>Kommentar:</strong> {review.overallNote || "Ingen kommentar"}
                 </p>
-                <p style={{ margin: 0, fontSize: "14px", color: "#555" }}>
+                <p className="profile-review-time">
                   {review.createdAt?.toDate
                     ? `Sendt inn: ${review.createdAt.toDate().toLocaleString("no-NO")}`
                     : "Sendt inn: ukjent tidspunkt"}
                 </p>
-                <p style={{ margin: "8px 0 0 0", fontSize: "13px", color: "#444", fontWeight: 700 }}>
+                <p className="profile-review-details-hint">
                   Vis detaljer
                 </p>
               </div>
@@ -429,106 +413,72 @@ const ProfilePage: React.FC = () => {
               setIsReviewModalOpen(false);
               setIsEditingReview(false);
             }}
-            style={{
-              position: "fixed",
-              inset: 0,
-              backgroundColor: "rgba(0, 0, 0, 0.55)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 1200,
-              padding: "16px",
-            }}
+            className="profile-modal-overlay"
           >
             <div
               onClick={(event) => event.stopPropagation()}
-              style={{
-                backgroundColor: "#fff",
-                width: "100%",
-                maxWidth: "720px",
-                maxHeight: "85vh",
-                overflowY: "auto",
-                borderRadius: "10px",
-                padding: "18px",
-              }}
+              className="profile-modal"
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "10px",
-                }}
-              >
-                <h4 style={{ margin: 0 }}>Detaljer for valgt anmeldelse</h4>
+              <div className="profile-modal-header">
+                <h4 className="profile-modal-title">Detaljer for valgt anmeldelse</h4>
                 <button
-                  className="login-button secondary"
+                  className="login-button secondary profile-inline-button profile-inline-button-small"
                   type="button"
                   onClick={() => {
                     setIsReviewModalOpen(false);
                     setIsEditingReview(false);
                   }}
-                  style={{ width: "auto", padding: "8px 12px", marginBottom: 0 }}
                 >
                   Lukk
                 </button>
               </div>
 
-              <p style={{ margin: "0 0 10px 0" }}>
+              <p className="profile-modal-line profile-modal-line-spaced">
                 <strong>Bolig:</strong> {selectedReview.housingId || "Ukjent"}
               </p>
 
               {!isEditingReview && (
                 <>
-                  <p style={{ margin: "0 0 6px 0" }}>
+                  <p className="profile-modal-line">
                     <strong>Plassering:</strong> {selectedReview.placementScore ?? "-"}/5
                   </p>
-                  <p style={{ margin: "0 0 10px 0" }}>
+                  <p className="profile-modal-line profile-modal-line-spaced">
                     <strong>Kommentar plassering:</strong> {selectedReview.placementNote || "Ingen kommentar"}
                   </p>
 
-                  <p style={{ margin: "0 0 6px 0" }}>
+                  <p className="profile-modal-line">
                     <strong>Pris:</strong> {selectedReview.priceScore ?? "-"}/5
                   </p>
-                  <p style={{ margin: "0 0 10px 0" }}>
+                  <p className="profile-modal-line profile-modal-line-spaced">
                     <strong>Kommentar pris:</strong> {selectedReview.priceNote || "Ingen kommentar"}
                   </p>
 
-                  <p style={{ margin: "0 0 6px 0" }}>
+                  <p className="profile-modal-line">
                     <strong>Kostnader:</strong> {selectedReview.costScore ?? "-"}/5
                   </p>
-                  <p style={{ margin: "0 0 10px 0" }}>
+                  <p className="profile-modal-line profile-modal-line-spaced">
                     <strong>Kommentar kostnader:</strong> {selectedReview.costNote || "Ingen kommentar"}
                   </p>
 
-                  <p style={{ margin: "0 0 6px 0" }}>
+                  <p className="profile-modal-line">
                     <strong>Generelt:</strong> {selectedReview.overallScore ?? "-"}/5
                   </p>
-                  <p style={{ margin: "0 0 10px 0" }}>
+                  <p className="profile-modal-line profile-modal-line-spaced">
                     <strong>Kommentar generelt:</strong> {selectedReview.overallNote || "Ingen kommentar"}
                   </p>
 
-                  <div style={{ display: "flex", gap: "8px" }}>
+                  <div className="profile-inline-actions">
                     <button
-                      className="login-button secondary"
+                      className="login-button secondary profile-inline-button"
                       type="button"
                       onClick={() => startEditingReview(selectedReview)}
-                      style={{ width: "auto", padding: "10px 14px", marginBottom: 0 }}
                     >
                       Rediger
                     </button>
                     <button
-                      className="login-button"
+                      className="login-button profile-inline-button profile-delete-review-button"
                       type="button"
                       onClick={handleDeleteReview}
-                      style={{
-                        width: "auto",
-                        padding: "10px 14px",
-                        marginBottom: 0,
-                        backgroundColor: "#b71c1c",
-                        color: "white",
-                        fontWeight: 700,
-                      }}
                     >
                       Slett anmeldelse
                     </button>
@@ -658,20 +608,18 @@ const ProfilePage: React.FC = () => {
                     />
                   </label>
 
-                  <div style={{ display: "flex", gap: "8px" }}>
+                  <div className="profile-inline-actions">
                     <button
-                      className="login-button primary"
+                      className="login-button primary profile-inline-button"
                       type="submit"
                       disabled={savingReview}
-                      style={{ width: "auto", padding: "10px 14px", marginBottom: 0 }}
                     >
                       {savingReview ? "Lagrer..." : "Lagre endringer"}
                     </button>
                     <button
-                      className="login-button secondary"
+                      className="login-button secondary profile-inline-button"
                       type="button"
                       onClick={() => setIsEditingReview(false)}
-                      style={{ width: "auto", padding: "10px 14px", marginBottom: 0 }}
                     >
                       Avbryt
                     </button>
@@ -683,27 +631,14 @@ const ProfilePage: React.FC = () => {
         )}
 
         <button
-          className="login-button"
-          style={{
-            backgroundColor: "#e53935",
-            color: "white",
-            fontSize: "18px",
-            fontWeight: 700,
-          }}
+          className="login-button profile-logout-button"
           onClick={handleLogout}
         >
           Logg ut
         </button>
 
         <button
-          className="login-button"
-          style={{
-            backgroundColor: "#b71c1c",
-            color: "white",
-            fontSize: "18px",
-            fontWeight: 700,
-            marginTop: "12px",
-          }}
+          className="login-button profile-delete-profile-button"
           onClick={handleDeleteProfile}
         >
           Slett profil
