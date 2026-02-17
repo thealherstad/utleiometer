@@ -2,7 +2,9 @@ import { useParams } from "react-router-dom";
 import "../style/ReviewPage.css";
 import { db, auth } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
+
 
 export default function ReviewPage() {
   const { id } = useParams();
@@ -17,6 +19,8 @@ export default function ReviewPage() {
     overallScore: "",
     overallNote: "",
   });
+
+  const [housingAddress, setHousingAddress] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>
@@ -41,6 +45,7 @@ export default function ReviewPage() {
     try {
       await addDoc(collection(db, "reviews"), {
         housingId: id,
+        housingAddress: housingAddress,
         userId: user.uid,
         placementScore: Number(review.placementScore),
         placementNote: review.placementNote,
@@ -59,12 +64,31 @@ export default function ReviewPage() {
       alert(error.message);
     }
   };
+  useEffect(() => {
+  const fetchHousing = async () => {
+    if (!id) return;
+
+    const docRef = doc(db, "listings", id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      setHousingAddress(
+        `${data.address}${data.city ? ", " + data.city : ""}`
+      );
+    }
+  };
+
+  fetchHousing();
+}, [id]);
+
 
   return (
     <div className="review-page">
       <header className="review-header">
         <h1>Skriv anmeldelse</h1>
-        <p>Bolig ID: {id}</p>
+        <p>{housingAddress}</p>
+
       </header>
 
       <form className="review-form" onSubmit={handleSubmit}>

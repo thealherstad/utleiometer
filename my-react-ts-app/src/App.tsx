@@ -13,6 +13,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { auth } from "./firebase";
 import { Navigate } from "react-router-dom";
+import HousingDetailsPage from "./pages/HousingDetailsPage";
+
 
 
 
@@ -60,6 +62,9 @@ function ProtectedRoute({ user, children }: ProtectedRouteProps) {
           <Route path="/registrer" element={<RegistrationPage />} />
           <Route path="/legg-inn-bolig" element={<AddListingPage />} />
           <Route path="/review/:id" element={<ReviewPage />} />
+          <Route path="/housing/:id" element={<HousingDetailsPage />} />
+          <Route path="/housing/:id/review" element={<ReviewPage />} />
+
           <Route
   path="/profil"
   element={

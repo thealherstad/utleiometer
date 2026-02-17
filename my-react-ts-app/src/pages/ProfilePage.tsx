@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
 import { deleteUser, onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, query, updateDoc, where , getDoc} from "firebase/firestore";
 import "../style/LoginPage.css";
 import "../style/ProfilePage.css";
 
@@ -17,6 +17,7 @@ type UserReview = {
   priceNote?: string;
   costScore?: number;
   costNote?: string;
+  housingAddress?: string;
   overallScore?: number;
   overallNote?: string;
   createdAt?: { toDate?: () => Date };
@@ -90,10 +91,26 @@ const ProfilePage: React.FC = () => {
         );
         const querySnapshot = await getDocs(reviewsQuery);
 
-        const userReviews: UserReview[] = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<UserReview, "id">),
-        }));
+        const userReviews: UserReview[] = await Promise.all(
+          querySnapshot.docs.map(async (docItem) => {
+           const reviewData = docItem.data() as Omit<UserReview, "id" | "housingAddress">;
+           let housingAddress = "";
+
+  
+           const housingDoc = await getDoc(doc(db, "listings", reviewData.housingId));
+          if (housingDoc.exists()) {
+            const data = housingDoc.data();
+            housingAddress = `${data.address}${data.city ? ", " + data.city : ""}`;
+        }
+
+        return {
+         id: docItem.id,
+         ...reviewData,
+         housingAddress, // sett her
+       };
+     }) 
+    );
+
 
         userReviews.sort((a, b) => {
           const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
@@ -434,7 +451,7 @@ const ProfilePage: React.FC = () => {
               </div>
 
               <p className="profile-modal-line profile-modal-line-spaced">
-                <strong>Bolig:</strong> {selectedReview.housingId || "Ukjent"}
+                <strong>Bolig:</strong> {selectedReview.housingAddress || "Ukjent"}
               </p>
 
               {!isEditingReview && (

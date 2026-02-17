@@ -15,13 +15,13 @@ export default function HomesView() {
         setLoading(true)
         const listings = await getAllListings()
         
-        // Konverter Firestore-data til Home-type
-        const convertedHomes: Home[] = listings.map((listing, index) => ({
-          id: index + 1, // Bruk index som ID
-          title: listing.area, // Bruk "area" som tittel (f.eks. "Trondheim")
-          address: `${listing.address}${listing.city ? ', ' + listing.city : ''}`, // Kombinert adresse
-          price: 12000, // Standard pris for nå
-          rating: 8, // Standard rating for nå
+        
+        const convertedHomes: Home[] = listings.map((listing) => ({
+          id: listing.id,
+          title: listing.area, 
+          address: `${listing.address}${listing.city ? ', ' + listing.city : ''}`, 
+          price: 12000, 
+          rating: 8, 
           image: listing.imageUrl || '', 
         }))
         
