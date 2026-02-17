@@ -4,7 +4,7 @@ import './HomeList.css'
 import logo from '../assets/logo.png'
 
 export type Home = {
-  id: number
+  id: string
   title: string
   address: string
   price: number
@@ -18,7 +18,7 @@ interface Props {
 
 export default function HomeCard({ home }: Props) {
   return (
-    <Link to={`/review/${home.id}`} className="home-card-link" aria-label={`Skriv anmeldelse for ${home.title}`}>
+    <Link to={`/housing/${home.id}`} className="home-card-link" aria-label={`Skriv anmeldelse for ${home.title}`}>
       <div className="home-card">
         <div className="home-content">
           <h3>{home.title}</h3>
