@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import HomeList from './HomeList'
 import type { Home } from './HomeCard'
@@ -41,12 +41,18 @@ export default function HomesView() {
   }, [])
 
   return (
-    <>
-      <h1>Boligoversikt</h1>
-      {loading && <p>Laster boligene...</p>}
-      {error && <p style={{ color: 'red' }}>Feil: {error}</p>}
-      {!loading && homes.length === 0 && <p>Ingen boligene funnet. Legg inn en bolig først!</p>}
+    <section className="homes-page">
+      <header className="homes-header">
+        <h1>Boligoversikt</h1>
+        <p>Utforsk boliger og trykk pa et kort for detaljer eller anmeldelse.</p>
+      </header>
+
+      {loading && <p className="homes-status">Laster boligene...</p>}
+      {error && <p className="homes-status homes-status-error">Feil: {error}</p>}
+      {!loading && homes.length === 0 && (
+        <p className="homes-status">Ingen boliger funnet. Legg inn en bolig for a komme i gang.</p>
+      )}
       {!loading && homes.length > 0 && <HomeList homes={homes} />}
-    </>
+    </section>
   )
 }
