@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import LoginPage from './pages/LoginPage'
 import RegistrationPage from './pages/Registrationpage'
 import AddListingPage from './pages/AddListingPage'
+import ReviewPage from './pages/ReviewPage'
 import HomesView from './homelistfiles/HomesView'
 import { Route, Routes } from 'react-router-dom'
 import ProfilePage from "./pages/ProfilePage";
@@ -12,6 +13,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { auth } from "./firebase";
 import { Navigate } from "react-router-dom";
+import HousingDetailsPage from "./pages/HousingDetailsPage";
+
 
 
 
@@ -22,11 +25,20 @@ function App() {
   ]
   const [user, setUser] = useState<User | null>(null);
 
+  const adminEmails = [
+    "admin1@utleiometer.no",
+    "admin2@utleiometer.no",
+    "admin3@utleiometer.no",
+    "admin4@utleiometer.no",
+    "admin5@utleiometer.no",
+  ];
+ const isAdmin = !!user && adminEmails.includes(user.email ?? "");
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); // null hvis ikke logget inn
+      setUser(currentUser); 
     });
-    return () => unsubscribe(); // cleanup
+    return () => unsubscribe(); 
   }, []);
 
 type ProtectedRouteProps = {
@@ -36,12 +48,12 @@ type ProtectedRouteProps = {
 
 function ProtectedRoute({ user, children }: ProtectedRouteProps) {
   if (!user) return <Navigate to="/logg-inn" replace />;
-  return <>{children}</>; // wrapper i fragment
+  return <>{children}</>; 
 }
 
   return (
     <>
-      <NavBar links={links} user = {user} />
+      <NavBar links={links} user={user} isAdmin={isAdmin} />
       <main className="page-shell">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -49,6 +61,10 @@ function ProtectedRoute({ user, children }: ProtectedRouteProps) {
           <Route path="/logg-inn" element={user ? <ProfilePage /> : <LoginPage />} />
           <Route path="/registrer" element={<RegistrationPage />} />
           <Route path="/legg-inn-bolig" element={<AddListingPage />} />
+          <Route path="/review/:id" element={<ReviewPage />} />
+          <Route path="/housing/:id" element={<HousingDetailsPage />} />
+          <Route path="/housing/:id/review" element={<ReviewPage />} />
+
           <Route
   path="/profil"
   element={
@@ -57,8 +73,6 @@ function ProtectedRoute({ user, children }: ProtectedRouteProps) {
     </ProtectedRoute>
   }
 />
-
-
         </Routes>
       </main>
     </>

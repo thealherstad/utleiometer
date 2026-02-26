@@ -9,6 +9,7 @@ export type Listing = {
   postalCode: string;
   city: string;
   notes: string;
+  imageUrl?: string;
   createdAt: Timestamp;
 };
 
@@ -26,6 +27,7 @@ export async function saveListing(listingData: Omit<Listing, "id" | "createdAt">
     const dataToSave = {
       ...listingData,
       createdAt: Timestamp.now(),
+      imageUrl: listingData.imageUrl || "",
     };
     console.log("Steg 4: Data som skal lagres:", dataToSave);
     
@@ -59,6 +61,7 @@ export async function getAllListings(): Promise<Listing[]> {
         postalCode: data.postalCode || "",
         city: data.city || "",
         notes: data.notes || "",
+        imageUrl: data.imageUrl || "",
         createdAt: data.createdAt || Timestamp.now(),
       });
     });

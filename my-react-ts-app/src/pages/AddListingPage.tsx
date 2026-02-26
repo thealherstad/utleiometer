@@ -20,6 +20,7 @@ type FormState = {
   postalCode: string;
   city: string;
   notes: string;
+  imageUrl: string;
 };
 
 type TouchedState = Partial<Record<keyof FormState, boolean>>;
@@ -35,6 +36,7 @@ export default function AddListingPage() {
     postalCode: "",
     city: "",
     notes: "",
+    imageUrl: "",
   });
 
   const [touched, setTouched] = useState<TouchedState>({});
@@ -115,6 +117,7 @@ export default function AddListingPage() {
         postalCode: form.postalCode,
         city: form.city,
         notes: form.notes,
+        imageUrl: form.imageUrl || "",
       });
 
       console.log("✅ saveListing fullført!");
@@ -132,6 +135,7 @@ export default function AddListingPage() {
         postalCode: "",
         city: "",
         notes: "",
+        imageUrl: "",
       });
       setTouched({});
 
@@ -226,6 +230,17 @@ export default function AddListingPage() {
                   <span className="error">{errors.city}</span>
                 )}
               </div>
+              <div className="field full">
+                <label htmlFor="imageUrl">Bilde-URL (valgfritt)</label>
+                <input
+                 id="imageUrl"
+                 type="text"
+                 placeholder="Lim inn lenke til bilde (https://...)"
+                 value={form.imageUrl}
+                 onChange={(e) => setField("imageUrl", e.target.value)}
+                />
+              </div>
+
 
               <div className="field full">
                 <label htmlFor="notes">
@@ -269,6 +284,7 @@ export default function AddListingPage() {
                     postalCode: "",
                     city: "",
                     notes: "",
+                    imageUrl: "",
                   });
                   setTouched({});
                   setSubmitted(null);
@@ -317,8 +333,22 @@ export default function AddListingPage() {
             </div>
             <div className="row">
               <span className="label">Kommentar</span>
-              <span className="value">{form.notes || "—"}</span>
+              <div className="value">{form.notes || "—"}</div>
             </div>
+            {form.imageUrl && (
+               <div className="row">
+                <span className="label">Bilde</span>
+                <img
+                  src={form.imageUrl}
+                  alt={form.address || "Boligbilde"}
+                  style={{
+                   maxWidth: "200px",
+                   maxHeight: "150px",
+                   borderRadius: "8px",
+                 }}
+               />
+             </div>
+            )}
           </div>
 
           {submitted && (

@@ -1,0 +1,144 @@
+.profile-card {
+  max-width: 640px;
+}
+
+.profile-user-info {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.profile-user-row {
+  margin: 0 0 8px 0;
+}
+
+.profile-user-row-last {
+  margin: 0;
+}
+
+.profile-username-section {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.profile-username-input {
+  margin-bottom: 10px;
+}
+
+.profile-inline-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-inline-button {
+  width: auto;
+  padding: 10px 14px;
+  margin-bottom: 0;
+}
+
+.profile-inline-button-small {
+  padding: 8px 12px;
+}
+
+.profile-reviews-section {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 24px;
+  border-top: 1px solid #ddd;
+  padding-top: 16px;
+}
+
+.profile-section-title {
+  margin-top: 0;
+}
+
+.profile-review-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  background-color: white;
+}
+
+.profile-review-card-selected {
+  background-color: #f3f4f6;
+}
+
+.profile-review-line {
+  margin: 0 0 6px 0;
+}
+
+.profile-review-time {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.profile-review-details-hint {
+  margin: 8px 0 0 0;
+  font-size: 13px;
+  color: #444;
+  font-weight: 700;
+}
+
+.profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 16px;
+}
+
+.profile-modal {
+  background-color: #fff;
+  width: 100%;
+  max-width: 720px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.profile-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.profile-modal-title {
+  margin: 0;
+}
+
+.profile-modal-line {
+  margin: 0 0 6px 0;
+}
+
+.profile-modal-line-spaced {
+  margin: 0 0 10px 0;
+}
+
+.profile-delete-review-button {
+  background-color: #b71c1c;
+  color: white;
+  font-weight: 700;
+}
+
+.profile-logout-button {
+  background-color: #e53935;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.profile-delete-profile-button {
+  background-color: #b71c1c;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 12px;
+}

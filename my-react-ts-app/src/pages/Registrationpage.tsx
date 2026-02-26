@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import "../style/Registrationpage.css"; 
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Link, useNavigate } from 'react-router-dom';
+import "../style/Registrationpage.css";
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase';
 
 const RegistrationPage: React.FC = () => {
@@ -9,6 +10,7 @@ const RegistrationPage: React.FC = () => {
     const [password, setPassword] = useState<string>('');
 
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -21,60 +23,67 @@ const RegistrationPage: React.FC = () => {
                 password
             );
 
-            console.log("Bruker registrert:", userCredential.user);
-            console.log("Brukernavn (ikke lagret enda):", username);
+            await updateProfile(userCredential.user, {
+                displayName: username,
+            });
 
-        } catch (err: any) {
+            navigate('/profil');
+
+        } catch (err: unknown) {
             console.error("Registrering feilet:", err);
-            setError(err.message);
+            const message = err instanceof Error ? err.message : "Noe gikk galt under registrering";
+            setError(message);
         }
     };
 
     return (
-        <div className ="page-center">
-            <div className="register-box">
-            <h2>Registrer bruker</h2>
+        <div className="register-wrapper">
+            <div className="register-card">
+            <h2 className="register-title">Registrer bruker</h2>
 
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label>
-                        E-post:
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </label>
+                <input
+                    type="email"
+                    placeholder="E-post"
+                    className="register-input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+
+                <input
+                    type="text"
+                    placeholder="Brukernavn"
+                    className="register-input"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
+
+                <input
+                    type="password"
+                    placeholder="Passord"
+                    className="register-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+
+                <button className="register-button primary" type="submit">Registrer</button>
+                <button
+                    className="register-button secondary"
+                    type="button"
+                    onClick={() => navigate('/logg-inn')}
+                >
+                    Tilbake til innlogging
+                </button>
+
+                {error && <p className="error">{error}</p>}
+
+                <div className="register-login">
+                    <span>Har du allerede bruker?</span>
+                    <Link to="/logg-inn">Logg inn</Link>
                 </div>
-
-                <div>
-                    <label>
-                        Brukernavn:
-                        <input
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                    </label>
-                </div>
-
-                <div>
-                    <label>
-                        Passord:
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </label>
-                </div>
-
-                <button type="submit">Registrer</button>
-
-                {error && <p className='error'>{error}</p>}
             </form>
         </div>
     </div>
