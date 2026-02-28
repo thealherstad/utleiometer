@@ -1,76 +1,124 @@
+.homes-page {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.homes-header h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 2.8vw, 2.5rem);
+  color: #0f172a;
+}
+
+.homes-header p {
+  margin: 0.5rem 0 0;
+  color: #475569;
+  font-size: 1rem;
+}
+
+.homes-status {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.homes-status-error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
 .home-list-container {
-  height: 600px;
-  width: 700px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  background: #f9f9f9;
-  overflow-y: scroll;
+  width: 100%;
 }
 
 .home-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
 }
 
 .home-card-link {
   text-decoration: none;
   color: inherit;
   display: block;
+  height: 100%;
 }
 
 .home-card {
+  height: 100%;
   display: flex;
-  gap: 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.2s;
+  gap: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1rem;
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .home-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
+  border-color: #93c5fd;
 }
 
 .home-content {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .home-card h3 {
-  margin: 0 0 12px;
+  margin: 0 0 0.55rem;
   font-size: 1.1rem;
-  color: #222;
+  color: #0f172a;
 }
 
 .address {
-  color: #666;
-  margin: 0 0 8px;
+  color: #475569;
+  margin: 0 0 0.45rem;
   font-size: 0.95rem;
 }
 
 .price {
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0 0 8px;
+  font-weight: 700;
+  color: #1d4ed8;
+  margin: 0 0 0.45rem;
   font-size: 1rem;
 }
 
 .rating {
-  color: #f39c12;
-  font-weight: 500;
+  color: #b45309;
+  font-weight: 600;
   margin: 0;
 }
 
 .home-image {
-  width: 180px;
-  height: 140px;
+  width: 130px;
+  height: 100px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 10px;
   flex-shrink: 0;
+  background: #e2e8f0;
+}
+
+@media (max-width: 640px) {
+  .home-card {
+    flex-direction: column-reverse;
+  }
+
+  .home-image {
+    width: 100%;
+    height: 170px;
+  }
 }

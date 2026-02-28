@@ -1,5 +1,3 @@
-import React from 'react'
-
 import HomeCard from './HomeCard';
 import type { Home } from './HomeCard';
 
