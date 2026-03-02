@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "../style/ReviewPage.css";
 import { db, auth } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
@@ -8,6 +8,7 @@ import { doc, getDoc } from "firebase/firestore";
 
 export default function ReviewPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   
   const [review, setReview] = useState({
     placementScore: "",
@@ -44,7 +45,7 @@ export default function ReviewPage() {
 
     try {
       await addDoc(collection(db, "reviews"), {
-        housingId: id,
+        housingId: String(id),
         housingAddress: housingAddress,
         userId: user.uid,
         placementScore: Number(review.placementScore),
@@ -58,7 +59,7 @@ export default function ReviewPage() {
         createdAt: serverTimestamp(),
       });
 
-      alert("Anmeldelse sendt")
+      navigate(`/housing/${id}`);
     } catch (error: any) {
       console.error("FULL ERROR:", error);
       alert(error.message);
