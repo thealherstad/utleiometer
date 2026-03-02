@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, updateDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import "../style/HousingDetailsPage.css";
 
 type Review = {
   id: string;
   userId?: string;
   userName?: string;
+  likes?: string[];
+  likeCount?: number;
   overallScore?: number;
   overallNote?: string;
   priceScore?: number;
@@ -30,13 +33,18 @@ type Housing = {
 const HousingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+
   const [housing, setHousing] = useState<Housing | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
+  const [bounceIds, setBounceIds] = useState<string[]>([]);
 
+  // Hent bolig
   useEffect(() => {
+    if (!id) return;
     const fetchHousing = async () => {
-      if (!id) return;
       const housingDoc = await getDoc(doc(db, "listings", id));
       if (housingDoc.exists()) {
         setHousing({ id: housingDoc.id, ...housingDoc.data() } as Housing);
@@ -45,11 +53,11 @@ const HousingDetailsPage: React.FC = () => {
     fetchHousing();
   }, [id]);
 
+  // Hent anmeldelser
   useEffect(() => {
+    if (!id) return;
     const fetchReviews = async () => {
-      if (!id) return;
       setLoadingReviews(true);
-
       try {
         const reviewsQuery = query(collection(db, "reviews"), where("housingId", "==", id));
         const querySnapshot = await getDocs(reviewsQuery);
@@ -68,9 +76,14 @@ const HousingDetailsPage: React.FC = () => {
               } catch {}
             }
 
+            const likesArray: string[] = data.likes || [];
+
             return {
               id: docItem.id,
               userId: data.userId || "",
+              userName,
+              likes: likesArray,
+              likeCount: likesArray.length,
               overallScore: data.overallScore ?? 0,
               overallNote: data.overallNote ?? "",
               priceScore: data.priceScore ?? 0,
@@ -79,11 +92,11 @@ const HousingDetailsPage: React.FC = () => {
               placementNote: data.placementNote ?? "",
               costScore: data.costScore ?? 0,
               costNote: data.costNote ?? "",
-              userName,
             };
           })
         );
 
+        fetchedReviews.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
         setReviews(fetchedReviews);
       } catch (error) {
         console.error("Feil ved henting av anmeldelser:", error);
@@ -95,8 +108,51 @@ const HousingDetailsPage: React.FC = () => {
     fetchReviews();
   }, [id]);
 
+  // Toggle like og lagre i Firestore
+  const toggleLike = async (reviewId: string) => {
+    if (!currentUser) return;
+
+    setReviews((prevReviews) => {
+      const updated = prevReviews.map((review) => {
+        if (review.id !== reviewId) return review;
+
+        const hasLiked = review.likes?.includes(currentUser.uid);
+        const updatedLikes = hasLiked
+          ? review.likes?.filter((uid) => uid !== currentUser.uid) || []
+          : [...(review.likes || []), currentUser.uid];
+
+        return { ...review, likes: updatedLikes, likeCount: updatedLikes.length };
+      });
+
+      updated.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
+      setBounceIds(updated.map((r) => r.id));
+      return updated;
+    });
+
+    try {
+      const reviewRef = doc(db, "reviews", reviewId);
+
+      // Hent siste versjon fra Firestore
+      const reviewSnap = await getDoc(reviewRef);
+      if (!reviewSnap.exists()) return;
+
+      const likesFromFirestore: string[] = reviewSnap.data().likes || [];
+      const hasLiked = likesFromFirestore.includes(currentUser.uid);
+
+      const likesToUpdate = hasLiked
+        ? likesFromFirestore.filter((uid) => uid !== currentUser.uid)
+        : [...likesFromFirestore, currentUser.uid];
+
+      await updateDoc(reviewRef, { likes: likesToUpdate });
+    } catch (error) {
+      console.error("Kunne ikke oppdatere likes i Firestore:", error);
+    }
+
+    setTimeout(() => setBounceIds([]), 600);
+  };
+
   const handleAddReview = () => {
-    if (!id || typeof id !== "string") return;
+    if (!id) return;
     navigate(`/review/${id}`);
   };
 
@@ -104,35 +160,28 @@ const HousingDetailsPage: React.FC = () => {
     <div className="housing-details-page">
       {housing && (
         <div className="housing-info">
-          {housing.imageUrl && (
-            <img
-              src={housing.imageUrl}
-              alt={housing.title || "Boligbilde"}
-              className="housing-image"
-            />
-          )}
+          {housing.imageUrl && <img src={housing.imageUrl} alt={housing.title || "Boligbilde"} className="housing-image" />}
           <div className="housing-text">
             <h1>{housing.title || "Boligdetaljer"}</h1>
             <p><strong>Adresse:</strong> {housing.address || "Ikke tilgjengelig"}</p>
             <p><strong>By:</strong> {housing.city || "Ukjent"}</p>
-            {housing.price !== undefined && (
-              <p><strong>Pris:</strong> {housing.price.toLocaleString()} kr/mnd</p>
-            )}
+            {housing.price !== undefined && <p><strong>Pris:</strong> {housing.price.toLocaleString()} kr/mnd</p>}
           </div>
         </div>
       )}
 
       <div className="housing-details-section">
         <h2>Anmeldelser</h2>
-
         {loadingReviews && <p className="loading-text">Laster anmeldelser...</p>}
-
         {!loadingReviews && reviews.length === 0 && <p>Ingen anmeldelser ennå.</p>}
 
         {!loadingReviews && reviews.length > 0 && (
           <div className="reviews-list">
             {reviews.map((review) => (
-              <div key={review.id} className="review-card">
+              <div
+                key={review.id}
+                className={`review-card ${bounceIds.includes(review.id) ? "bounce" : ""}`}
+              >
                 <p className="review-user"><strong>Bruker:</strong> {review.userName}</p>
 
                 <div className="review-field">
@@ -154,6 +203,18 @@ const HousingDetailsPage: React.FC = () => {
                   <span><strong>Kostnader:</strong> {review.costScore}/5</span>
                   {review.costNote && <span className="review-note">Kommentar: {review.costNote}</span>}
                 </div>
+
+                <div className="review-actions">
+                  <span
+                    className={`heart ${review.likes?.includes(currentUser?.uid || "") ? "liked" : ""}`}
+                    onClick={() => toggleLike(review.id)}
+                  >
+                    ♥
+                  </span>
+                  <span className="like-count">{review.likeCount || 0}</span>
+                </div>
+
+                <button className="report-button">Rapporter</button>
               </div>
             ))}
           </div>
