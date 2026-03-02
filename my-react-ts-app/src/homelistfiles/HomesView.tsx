@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import HomeList from './HomeList'
 import type { Home } from './HomeCard'
@@ -8,6 +8,7 @@ export default function HomesView() {
   const [homes, setHomes] = useState<Home[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -40,13 +41,37 @@ export default function HomesView() {
     fetchListings()
   }, [])
 
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase()
+  const filteredHomes = homes.filter((home) =>
+    home.address.toLowerCase().includes(normalizedSearchTerm)
+  )
+
   return (
-    <>
-      <h1>Boligoversikt</h1>
-      {loading && <p>Laster boligene...</p>}
-      {error && <p style={{ color: 'red' }}>Feil: {error}</p>}
-      {!loading && homes.length === 0 && <p>Ingen boligene funnet. Legg inn en bolig først!</p>}
-      {!loading && homes.length > 0 && <HomeList homes={homes} />}
-    </>
+    <section className="homes-page">
+      <header className="homes-header">
+        <h1>Boligoversikt</h1>
+        <div className="homes-header-row">
+          <p>Utforsk boliger og trykk pa et kort for detaljer eller anmeldelse.</p>
+          <input
+            type="text"
+            className="homes-search"
+            placeholder="Søk etter adresse"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            aria-label="Søk etter adresse"
+          />
+        </div>
+      </header>
+
+      {loading && <p className="homes-status">Laster boligene...</p>}
+      {error && <p className="homes-status homes-status-error">Feil: {error}</p>}
+      {!loading && homes.length === 0 && (
+        <p className="homes-status">Ingen boliger funnet. Legg inn en bolig for a komme i gang.</p>
+      )}
+      {!loading && homes.length > 0 && filteredHomes.length === 0 && (
+        <p className="homes-status">Ingen boliger matcher adressen du søkte etter.</p>
+      )}
+      {!loading && filteredHomes.length > 0 && <HomeList homes={filteredHomes} />}
+    </section>
   )
 }

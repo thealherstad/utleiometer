@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import "../style/AddListingPage.css";
-import { saveListing } from "../services/listingService";
+import { DuplicateListingError, saveListing } from "../services/listingService";
 
 const AREAS = [
   "Trondheim",
@@ -143,7 +143,11 @@ export default function AddListingPage() {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       console.error("❌ FEIL ved lagring:", error);
-      setErrorMessage("Feil ved lagring av bolig. Prøv igjen.");
+      if (error instanceof DuplicateListingError) {
+        setErrorMessage("Denne boligen er allerede registrert.");
+      } else {
+        setErrorMessage("Feil ved lagring av bolig. Prøv igjen.");
+      }
     } finally {
       setIsLoading(false);
     }
