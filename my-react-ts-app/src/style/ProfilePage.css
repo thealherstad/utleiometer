@@ -129,10 +129,14 @@
 }
 
 .profile-logout-button {
-  background-color: #e53935;
+  background-color: #1565c0;
   color: white;
   font-size: 18px;
   font-weight: 700;
+}
+
+.profile-logout-button:hover {
+  background-color: #0d47a1;
 }
 
 .profile-delete-profile-button {
@@ -141,4 +145,8 @@
   font-size: 18px;
   font-weight: 700;
   margin-top: 12px;
+}
+
+.profile-delete-profile-button:hover {
+  background-color: #8b0000;
 }
