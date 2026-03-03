@@ -7,16 +7,18 @@
 
 body {
   margin: 0;
-  background: #f7f7fb;
-  color: #111827;
+  background: var(--app-bg);
+  color: var(--text-primary);
 }
 
 .page-shell {
-  background: linear-gradient(180deg, #fbfbff 0%, #f7f7fb 100%);
+  background: linear-gradient(180deg, var(--app-bg-soft) 0%, var(--app-bg) 100%);
   width: 100%;
   box-sizing: border-box;
   min-height: calc(100vh - 64px);
   padding: 3rem 1rem;
+  color: inherit;
+  transition: background 160ms ease, color 160ms ease;
 }
 
 .page-shell > * {

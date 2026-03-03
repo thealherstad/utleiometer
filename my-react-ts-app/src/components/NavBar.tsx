@@ -8,9 +8,11 @@ type Props = {
   links: LinkItem[]
   user?: any;
   isAdmin?: boolean;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
-export default function NavBar({ links, user, isAdmin }: Props)
+export default function NavBar({ links, user, isAdmin, theme, onToggleTheme }: Props)
 
  {
   return (
@@ -58,9 +60,14 @@ export default function NavBar({ links, user, isAdmin }: Props)
           >
             Profil
           </Link>
-
-
-
+          <button
+            type="button"
+            className="navbar__theme-toggle"
+            onClick={onToggleTheme}
+            aria-label={`Bytt til ${theme === 'light' ? 'mørk' : 'lys'} modus`}
+          >
+            {theme === 'light' ? 'Mørk modus' : 'Lys modus'}
+          </button>
         </div>
       </div>
     </header>

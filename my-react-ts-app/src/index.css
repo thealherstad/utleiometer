@@ -6,6 +6,31 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --app-bg: #eef2f7;
+  --app-bg-soft: #f8fafc;
+  --surface-primary: rgba(255, 255, 255, 0.92);
+  --surface-secondary: #f8fafc;
+  --surface-hover: #eef2ff;
+  --text-primary: #111827;
+  --text-secondary: #475569;
+  --border-subtle: #dbe4f0;
+  --border-strong: #c7d2fe;
+  --accent-strong: #111827;
+  --accent-contrast: #ffffff;
+}
+
+:root[data-theme='dark'] {
+  --app-bg: #0b1120;
+  --app-bg-soft: #111827;
+  --surface-primary: rgba(17, 24, 39, 0.92);
+  --surface-secondary: #182133;
+  --surface-hover: #22304a;
+  --text-primary: #e5e7eb;
+  --text-secondary: #cbd5e1;
+  --border-subtle: #334155;
+  --border-strong: #475569;
+  --accent-strong: #60a5fa;
+  --accent-contrast: #0b1120;
 }
 
 * {
@@ -18,6 +43,9 @@ body {
   min-height: 100vh;
   width: 100%;
   display: block;
+  background: var(--app-bg);
+  color: var(--text-primary);
+  transition: background-color 160ms ease, color 160ms ease;
 }
 
 #root {
