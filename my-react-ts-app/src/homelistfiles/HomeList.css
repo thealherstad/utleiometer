@@ -19,6 +19,34 @@
   font-size: 1rem;
 }
 
+.homes-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.homes-header-row p {
+  margin: 0;
+}
+
+.homes-search {
+  width: 100%;
+  max-width: 320px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.homes-search:focus {
+  outline: none;
+  border-color: #93c5fd;
+}
+
 .homes-status {
   margin: 0;
   padding: 0.85rem 1rem;
@@ -113,6 +141,15 @@
 }
 
 @media (max-width: 640px) {
+  .homes-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .homes-search {
+    max-width: 100%;
+  }
+
   .home-card {
     flex-direction: column-reverse;
   }
