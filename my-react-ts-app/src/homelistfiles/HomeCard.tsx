@@ -16,6 +16,8 @@ interface Props {
 }
 
 export default function HomeCard({ home }: Props) {
+  const hasReviews = home.rating > 0
+
   return (
     <Link to={`/housing/${home.id}`} className="home-card-link" aria-label={`Skriv anmeldelse for ${home.title}`}>
       <div className="home-card">
@@ -23,7 +25,9 @@ export default function HomeCard({ home }: Props) {
           <h3>{home.title}</h3>
           <p className="address">{home.address}</p>
           <p className="price">Leiepris: {home.price.toLocaleString()} kr/mnd</p>
-          <p className="rating">Rating: {home.rating}/10</p>
+          <p className="rating">
+            {hasReviews ? `Rating: ${home.rating.toFixed(1)}/5` : 'Rating: Ingen anmeldelser ennå'}
+          </p>
         </div>
          <img
           src={home.image || logo}
