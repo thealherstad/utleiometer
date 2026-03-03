@@ -2,9 +2,12 @@
   max-width: 950px;
   margin: 2rem auto;
   padding: 2.5rem;
-  background-color: #f9f9f9;
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
   border-radius: 18px;
   font-family: Arial, sans-serif;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
 }
 
 .housing-info {
@@ -19,23 +22,25 @@
   height: 120px;
   object-fit: cover;
   border-radius: 8px;
+  background: var(--surface-secondary);
 }
 
 .housing-text h1 {
   margin: 0 0 0.8rem 0;
   font-size: 2rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .housing-text p {
   margin: 0.3rem 0;
   font-size: 1rem;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .housing-details-section h2 {
   font-size: 1.6rem;
   margin-bottom: 1rem;
+  color: var(--text-primary);
 }
 
 .reviews-list {
@@ -47,10 +52,10 @@
 .review-card {
   position: relative;
   padding: 2rem 1.5rem 1.5rem 1.5rem;
-  background-color: #fff;
+  background-color: var(--surface-secondary);
   border-radius: 12px;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
 }
 
 .review-card.bouncing {
@@ -60,6 +65,7 @@
 .review-user {
   font-weight: bold;
   margin-bottom: 0.6rem;
+  color: var(--text-primary);
 }
 
 .review-field {
@@ -68,11 +74,12 @@
   flex-wrap: wrap;
   margin-bottom: 0.4rem;
   font-size: 0.98rem;
+  color: var(--text-primary);
 }
 
 .review-note {
   font-style: italic;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .add-review-button {
@@ -81,19 +88,20 @@
   font-size: 1rem;
   border-radius: 8px;
   border: none;
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--accent-strong);
+  color: var(--accent-contrast);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: filter 0.2s;
+  font-weight: 700;
 }
 
 .add-review-button:hover {
-  background-color: #45a049;
+  filter: brightness(0.96);
 }
 
 .loading-text {
   font-style: italic;
-  color: #777;
+  color: var(--text-secondary);
 }
 
 .review-actions {
@@ -108,7 +116,7 @@
 .heart {
   font-size: 2.5rem;
   cursor: pointer;
-  color: #a59394;
+  color: #94a3b8;
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   transition: transform 0.2s ease, color 0.2s ease;
 }
@@ -123,7 +131,7 @@
 
 .like-count {
   font-size: 0.95rem;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .report-button {
@@ -132,15 +140,30 @@
   right: 16px;
   padding: 0.6rem 1.2rem;
   font-size: 0.95rem;
-  background-color: black;
-  color: white;
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
   border-radius: 6px;
-  border: none;
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
 }
 
 .report-button:hover {
-  text-decoration: underline;
+  background: var(--surface-hover);
+}
+
+@media (max-width: 768px) {
+  .housing-details-page {
+    padding: 1.5rem;
+  }
+
+  .housing-info {
+    flex-direction: column;
+  }
+
+  .housing-image {
+    width: 100%;
+    height: 220px;
+  }
 }
 
 @keyframes bounceMove {

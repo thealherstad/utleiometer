@@ -9,6 +9,7 @@ type Review = {
   id: string;
   userId?: string;
   userName?: string;
+  isAnonymous?: boolean;
   likes?: string[];
   likeCount?: number;
   overallScore?: number;
@@ -66,8 +67,11 @@ const HousingDetailsPage: React.FC = () => {
           querySnapshot.docs.map(async (docItem) => {
             const data = docItem.data();
             let userName = "Anonym";
+            const isAnonymous = Boolean(data.isAnonymous);
 
-            if (data.userId) {
+            if (!isAnonymous && data.submittedByName) {
+              userName = data.submittedByName;
+            } else if (!isAnonymous && data.userId) {
               try {
                 const userDoc = await getDoc(doc(db, "users", data.userId));
                 if (userDoc.exists()) {
@@ -82,6 +86,7 @@ const HousingDetailsPage: React.FC = () => {
               id: docItem.id,
               userId: data.userId || "",
               userName,
+              isAnonymous,
               likes: likesArray,
               likeCount: likesArray.length,
               overallScore: data.overallScore ?? 0,
