@@ -45,11 +45,16 @@
 }
 
 .review-card {
-  padding: 1.2rem 1.5rem;
+  position: relative;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
   background-color: #fff;
   border-radius: 12px;
   border: 1px solid #ddd;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+}
+
+.review-card.bouncing {
+  animation: bounceMove 0.4s ease;
 }
 
 .review-user {
@@ -89,4 +94,59 @@
 .loading-text {
   font-style: italic;
   color: #777;
+}
+
+.review-actions {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.heart {
+  font-size: 2.5rem;
+  cursor: pointer;
+  color: #a59394;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.heart:hover {
+  transform: scale(1.15);
+}
+
+.heart.liked {
+  color: #e51624;
+}
+
+.like-count {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.report-button {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  background-color: black;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.report-button:hover {
+  text-decoration: underline;
+}
+
+@keyframes bounceMove {
+  0% { transform: translateY(0); }
+  30% { transform: translateY(-10px); }
+  50% { transform: translateY(0); }
+  70% { transform: translateY(-5px); }
+  100% { transform: translateY(0); }
 }
