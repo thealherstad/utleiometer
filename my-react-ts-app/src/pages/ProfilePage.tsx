@@ -404,7 +404,7 @@ const ProfilePage: React.FC = () => {
                 }`}
               >
                 <p className="profile-review-line">
-                  <strong>Bolig:</strong> {review.housingId || "Ukjent"}
+                  <strong>Bolig:</strong> {review.housingAddress || "Ukjent"}
                 </p>
                 <p className="profile-review-line">
                   <strong>Generelt score:</strong> {review.overallScore ?? "-"}/5
