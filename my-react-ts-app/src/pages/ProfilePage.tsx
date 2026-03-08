@@ -10,7 +10,17 @@ import {
   updateProfile,
 } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { collection, deleteDoc, doc, getDocs, query, updateDoc, where , getDoc} from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+  getDoc,
+  writeBatch,
+} from "firebase/firestore";
 import "../style/LoginPage.css";
 import "../style/ProfilePage.css";
 
@@ -82,6 +92,29 @@ const getDeleteProfileErrorMessage = (error: unknown) => {
   }
 
   return `Noe gikk galt ved sletting av profilen: ${getFirebaseErrorMessage(error)}`;
+};
+
+const deleteReviewsForUser = async (userId: string) => {
+  const userReviewsQuery = query(collection(db, "reviews"), where("userId", "==", userId));
+  const userReviewsSnapshot = await getDocs(userReviewsQuery);
+
+  if (userReviewsSnapshot.empty) {
+    return;
+  }
+
+  const reviewDocs = userReviewsSnapshot.docs;
+  const chunkSize = 400;
+
+  for (let index = 0; index < reviewDocs.length; index += chunkSize) {
+    const chunk = reviewDocs.slice(index, index + chunkSize);
+    const batch = writeBatch(db);
+
+    chunk.forEach((reviewDoc) => {
+      batch.delete(reviewDoc.ref);
+    });
+
+    await batch.commit();
+  }
 };
 
 const ProfilePage: React.FC = () => {
@@ -243,9 +276,7 @@ const ProfilePage: React.FC = () => {
       const credential = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, credential);
 
-      const userReviewsQuery = query(collection(db, "reviews"), where("userId", "==", user.uid));
-      const userReviewsSnapshot = await getDocs(userReviewsQuery);
-      await Promise.all(userReviewsSnapshot.docs.map((reviewDoc) => deleteDoc(reviewDoc.ref)));
+      await deleteReviewsForUser(user.uid);
 
       await deleteDoc(doc(db, "users", user.uid));
       await deleteUser(user);
