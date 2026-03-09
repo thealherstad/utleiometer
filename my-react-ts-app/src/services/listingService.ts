@@ -5,9 +5,10 @@ import { db } from "../firebase";
 export type Listing = {
   id: string;
   address: string;
-  area: string;
   postalCode: string;
+  poststed: string;
   city: string;
+  price: number;
   notes: string;
   imageUrl?: string;
   createdAt: Timestamp;
