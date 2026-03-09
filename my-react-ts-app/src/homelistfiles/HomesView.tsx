@@ -74,16 +74,15 @@ export default function HomesView() {
           })
         })
 
-        const convertedHomes: Home[] = listings.map((listing, index) => {
+        const convertedHomes: Home[] = listings.map((listing) => {
           const ratingData = ratingAccumulator.get(listing.id)
           const averageRating = ratingData ? ratingData.total / ratingData.count : 0
-          const derivedPrice = 8500 + (index % 6) * 1750
 
           return {
             id: listing.id,
-            title: listing.area || 'Ukjent omrade',
-            address: `${listing.address}${listing.city ? ', ' + listing.city : ''}`,
-            price: derivedPrice,
+            title: listing.city || 'Ukjent område',
+            address: listing.address,
+            price: listing.price ?? 0,
             rating: Number(averageRating.toFixed(1)),
             image: listing.imageUrl || '',
           }
