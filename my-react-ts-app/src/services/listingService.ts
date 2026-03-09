@@ -100,6 +100,7 @@ export async function getAllListings(): Promise<Listing[]> {
         city: data.city || "",
         notes: data.notes || "",
         imageUrl: data.imageUrl || "",
+        price: data.price ?? 0,
         createdAt: data.createdAt || Timestamp.now(),
       });
     });
