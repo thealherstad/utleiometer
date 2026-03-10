@@ -1,20 +1,42 @@
-// Paste this inside your existing Firestore rules under:
-// service cloud.firestore { match /databases/{database}/documents { ... } }
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
 
-match /reviews/{reviewId} {
-  allow read: if true;
+    match /listings/{document=**} {
+      allow read, write: if true;
+    }
 
-  // Keep your existing create/delete rules if you already have them.
-  // Example create rule:
-  allow create: if request.auth != null
-                && request.resource.data.userId == request.auth.uid;
+    match /reviews/{reviewId} {
 
-  // Allow any authenticated user to update ONLY likes on any review
-  allow update: if request.auth != null
-                && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["likes"])
-                && request.resource.data.likes is list;
+      allow read: if true;
 
-  // Example delete rule: only review owner can delete
-  allow delete: if request.auth != null
-                && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update: if request.auth != null
+        && (
+          // Owner can edit everything
+          resource.data.userId == request.auth.uid
+
+          ||
+
+          // Any authenticated user can update likes only
+          (
+            request.resource.data.diff(resource.data)
+              .affectedKeys().hasOnly(["likes"])
+            && request.resource.data.likes is list
+          )
+        );
+
+      allow delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+
+      allow write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+  }
 }
