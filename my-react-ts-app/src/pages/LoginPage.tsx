@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import "../style/LoginPage.css";
+import Layout from "../components/Layout";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -19,6 +20,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
+    <Layout>
     <div className="login-wrapper">
       <div className="login-card">
         <h2 className="login-title">Logg inn</h2>
@@ -59,6 +61,7 @@ const LoginPage: React.FC = () => {
         </div>
       </div>
     </div>
+  </Layout>
   );
 };
 

@@ -4,6 +4,7 @@ import { db } from "../firebase";
 import { collection, doc, getDoc, getDocs, query, where, updateDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import "../style/HousingDetailsPage.css";
+import Layout from "../components/Layout";
 
 type Review = {
   id: string;
@@ -161,7 +162,9 @@ const HousingDetailsPage: React.FC = () => {
     navigate(`/review/${id}`);
   };
 
+
   return (
+    <Layout>
     <div className="housing-details-page">
       {housing && (
         <div className="housing-info">
@@ -230,6 +233,7 @@ const HousingDetailsPage: React.FC = () => {
         </button>
       </div>
     </div>
+    </Layout>
   );
 };
 
