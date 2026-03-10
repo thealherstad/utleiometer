@@ -76,12 +76,12 @@ const HousingDetailsPage: React.FC = () => {
   // Hent anmeldelser
   useEffect(() => {
     if (!id) return;
+    setLoadingReviews(true);
     const reviewsQuery = query(collection(db, "reviews"), where("housingId", "==", id));
 
     const unsubscribe = onSnapshot(
       reviewsQuery,
       async (querySnapshot) => {
-        setLoadingReviews(true);
         try {
           const fetchedReviews: Review[] = await Promise.all(
             querySnapshot.docs.map(async (docItem) => {
