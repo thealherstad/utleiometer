@@ -5,6 +5,7 @@
 .profile-user-info {
   margin-bottom: 24px;
   text-align: left;
+  color: var(--text-primary);
 }
 
 .profile-user-row {
@@ -28,6 +29,7 @@
 .profile-inline-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .profile-inline-button {
@@ -44,8 +46,9 @@
   width: 100%;
   text-align: left;
   margin-bottom: 24px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-subtle);
   padding-top: 16px;
+  color: var(--text-primary);
 }
 
 .profile-section-title {
@@ -53,16 +56,18 @@
 }
 
 .profile-review-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
   padding: 12px;
   margin-bottom: 10px;
   cursor: pointer;
-  background-color: white;
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
 }
 
 .profile-review-card-selected {
-  background-color: #f3f4f6;
+  border-color: var(--border-strong);
+  background-color: var(--surface-hover);
 }
 
 .profile-review-line {
@@ -72,13 +77,13 @@
 .profile-review-time {
   margin: 0;
   font-size: 14px;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .profile-review-details-hint {
   margin: 8px 0 0 0;
   font-size: 13px;
-  color: #444;
+  color: var(--text-secondary);
   font-weight: 700;
 }
 
@@ -94,13 +99,27 @@
 }
 
 .profile-modal {
-  background-color: #fff;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
   width: 100%;
   max-width: 720px;
   max-height: 85vh;
   overflow-y: auto;
   border-radius: 10px;
   padding: 18px;
+}
+
+.profile-modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+}
+
+.profile-modal .login-input {
+  margin-bottom: 0;
 }
 
 .profile-modal-header {
@@ -123,30 +142,28 @@
 }
 
 .profile-delete-review-button {
-  background-color: #b71c1c;
-  color: white;
+  background-color: #b91c1c;
+  color: #ffffff;
   font-weight: 700;
 }
 
 .profile-logout-button {
-  background-color: #1565c0;
-  color: white;
+  background-color: var(--accent-strong);
+  color: var(--accent-contrast);
   font-size: 18px;
   font-weight: 700;
 }
 
-.profile-logout-button:hover {
-  background-color: #0d47a1;
-}
-
 .profile-delete-profile-button {
-  background-color: #b71c1c;
-  color: white;
+  background-color: #b91c1c;
+  color: #ffffff;
   font-size: 18px;
   font-weight: 700;
   margin-top: 12px;
 }
 
-.profile-delete-profile-button:hover {
-  background-color: #8b0000;
+.profile-logout-button:hover,
+.profile-delete-profile-button:hover,
+.profile-delete-review-button:hover {
+  filter: brightness(0.92);
 }

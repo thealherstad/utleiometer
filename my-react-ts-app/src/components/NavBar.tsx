@@ -66,7 +66,7 @@ export default function NavBar({ links, user, isAdmin, theme, onToggleTheme }: P
             onClick={onToggleTheme}
             aria-label={`Bytt til ${theme === 'light' ? 'mørk' : 'lys'} modus`}
           >
-            {theme === 'light' ? 'Mørk modus' : 'Lys modus'}
+            {theme === 'light' ? 'Mørk' : 'Lys'}
           </button>
         </div>
       </div>

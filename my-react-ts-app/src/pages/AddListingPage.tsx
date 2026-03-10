@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import "../style/AddListingPage.css";
 import { DuplicateListingError, saveListing } from "../services/listingService";
 import Layout from "../components/Layout";
+import { auth } from "../firebase";
 
 type FormState = {
   address: string;
@@ -17,8 +18,6 @@ type TouchedState = Partial<Record<keyof FormState, boolean>>;
 
 type ErrorsState = Partial<Record<keyof FormState, string>>;
 
-type SubmittedState = FormState & { createdAt: string };
-
 export default function AddListingPage() {
   const [form, setForm] = useState<FormState>({
     address: "",
@@ -31,7 +30,6 @@ export default function AddListingPage() {
   });
 
   const [touched, setTouched] = useState<TouchedState>({});
-  const [submitted, setSubmitted] = useState<SubmittedState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -91,6 +89,12 @@ export default function AddListingPage() {
       return;
     }
 
+    if (!auth.currentUser) {
+      setErrorMessage("Du må være innlogget for å sende inn bolig.");
+      setSuccessMessage(null);
+      return;
+    }
+
     console.log("✅ Form er valid - starter lagring");
     setIsLoading(true);
     setErrorMessage(null);
@@ -118,12 +122,7 @@ export default function AddListingPage() {
       });
 
       console.log("✅ saveListing fullført!");
-      // Vis suksessmelding
-      alert("Boligen er lagret!")
-      setSubmitted({
-        ...form,
-        createdAt: new Date().toLocaleString(),
-      });
+      setSuccessMessage("Boligen er lagret.");
 
       // Nullstill skjemaet
       setForm({
@@ -301,7 +300,6 @@ export default function AddListingPage() {
                     imageUrl: "",
                   });
                   setTouched({});
-                  setSubmitted(null);
                   setSuccessMessage(null);
                   setErrorMessage(null);
                 }}
