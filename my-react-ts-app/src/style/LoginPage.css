@@ -4,43 +4,49 @@
   align-items: center;
   min-height: 100%;
   background-color: transparent;
-  font-family: Arial, sans-serif;
   overflow-x: hidden;
   width: 100%;
 }
 
 .login-card {
-  background-color: #ffffff;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-subtle);
   padding: 45px 30px;
   border-radius: 14px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
   max-width: 420px;
   width: 100%;
   text-align: center;
   box-sizing: border-box;
+  color: var(--text-primary);
 }
 
 .login-title {
   margin-bottom: 30px;
-  color: #222;
+  color: var(--text-primary);
   font-size: 32px;
   font-weight: 800;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
 }
 
 .login-input {
   width: 100%;
   padding: 14px;
   margin-bottom: 18px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
   font-size: 16px;
   box-sizing: border-box;
 }
 
+.login-input::placeholder {
+  color: var(--text-secondary);
+}
+
 .login-input:focus {
-  border-color: #4caf50;
-  box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.18);
   outline: none;
 }
 
@@ -48,33 +54,37 @@
   width: 100%;
   padding: 14px;
   margin-bottom: 14px;
-  border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s;
-}
-
-.login-button.primary {
-  background-color: #4caf50;
-  color: white;
-  font-size: 18px;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+  border: 1px solid transparent;
   font-weight: 700;
 }
 
+.login-button.primary {
+  background-color: var(--accent-strong);
+  color: var(--accent-contrast);
+  font-size: 18px;
+}
+
 .login-button.primary:hover {
-  background-color: #45a049;
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+  filter: brightness(0.96);
 }
 
 .login-button.secondary {
-  background-color: #888;
-  color: white;
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
   font-size: 16px;
 }
 
 .login-button.secondary:hover {
-  background-color: #666;
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+  filter: brightness(0.96);
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .login-register {
@@ -83,10 +93,11 @@
   display: flex;
   gap: 8px;
   justify-content: center;
+  color: var(--text-secondary);
 }
 
 .login-register a {
-  color: #111827;
+  color: var(--text-primary);
   font-weight: 700;
   text-decoration: underline;
 }

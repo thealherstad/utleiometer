@@ -5,17 +5,18 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  color: var(--text-primary);
 }
 
 .homes-header h1 {
   margin: 0;
   font-size: clamp(1.8rem, 2.8vw, 2.5rem);
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .homes-header p {
   margin: 0.5rem 0 0;
-  color: #475569;
+  color: var(--text-secondary);
   font-size: 1rem;
 }
 
@@ -40,7 +41,7 @@
 .homes-filter-group label {
   font-size: 0.82rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -60,27 +61,31 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid #dbe4f0;
+  border: 1px solid var(--border-subtle);
   border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  background: var(--surface-primary);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
 .homes-search {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   font-size: 0.95rem;
-  color: #0f172a;
-  background: #ffffff;
+  color: var(--text-primary);
+  background: var(--surface-secondary);
+}
+
+.homes-search::placeholder {
+  color: var(--text-secondary);
 }
 
 .homes-search:focus,
 .homes-select:focus {
   outline: none;
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.2);
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.18);
 }
 
 .homes-filter-button {
@@ -90,10 +95,10 @@
   gap: 0.55rem;
   min-width: 140px;
   padding: 0.7rem 1rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--accent-strong);
+  color: var(--accent-contrast);
   font-weight: 700;
 }
 
@@ -113,24 +118,24 @@
 .homes-select {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   font-size: 0.95rem;
-  color: #0f172a;
-  background: #ffffff;
+  color: var(--text-primary);
+  background: var(--surface-secondary);
 }
 
 .homes-range {
   width: 100%;
   height: 2.2rem;
   margin: 0;
-  accent-color: #0f172a;
+  accent-color: var(--accent-strong);
   cursor: pointer;
 }
 
 .homes-results {
   margin: 0;
-  color: #475569;
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
@@ -148,10 +153,10 @@
 
 .homes-modal {
   width: min(560px, 100%);
-  border: 1px solid #dbe4f0;
+  border: 1px solid var(--border-subtle);
   border-radius: 20px;
   padding: 1.25rem;
-  background: #ffffff;
+  background: var(--surface-primary);
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
 }
 
@@ -166,13 +171,13 @@
 .homes-modal-header h2 {
   margin: 0;
   font-size: 1.2rem;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .homes-modal-close,
 .homes-modal-secondary,
 .homes-modal-primary {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 0.65rem 0.95rem;
   font-weight: 700;
@@ -180,13 +185,13 @@
 
 .homes-modal-close,
 .homes-modal-secondary {
-  background: #ffffff;
-  color: #334155;
+  background: var(--surface-secondary);
+  color: var(--text-primary);
 }
 
 .homes-modal-primary {
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--accent-strong);
+  color: var(--accent-contrast);
 }
 
 .homes-filters {
@@ -206,15 +211,15 @@
   margin: 0;
   padding: 0.85rem 1rem;
   border-radius: 12px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #0f172a;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
 }
 
 .homes-status-error {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
 }
 
 .home-list-container {
@@ -239,18 +244,18 @@
   height: 100%;
   display: flex;
   gap: 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 1rem;
-  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  background: var(--surface-primary);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .home-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
-  border-color: #93c5fd;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.16);
+  border-color: var(--border-strong);
 }
 
 .home-content {
@@ -264,24 +269,24 @@
 .home-card h3 {
   margin: 0 0 0.55rem;
   font-size: 1.1rem;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .address {
-  color: #475569;
+  color: var(--text-secondary);
   margin: 0 0 0.45rem;
   font-size: 0.95rem;
 }
 
 .price {
   font-weight: 700;
-  color: #1d4ed8;
+  color: var(--text-primary);
   margin: 0 0 0.45rem;
   font-size: 1rem;
 }
 
 .rating {
-  color: #b45309;
+  color: #f59e0b;
   font-weight: 600;
   margin: 0;
 }
@@ -292,7 +297,8 @@
   object-fit: cover;
   border-radius: 10px;
   flex-shrink: 0;
-  background: #e2e8f0;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-subtle);
 }
 
 @media (max-width: 640px) {
