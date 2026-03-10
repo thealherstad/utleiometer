@@ -1,15 +1,27 @@
-import { useParams } from "react-router-dom";
-import "../style/ReviewPage.css";
-import { db, auth } from "../firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { useState, useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
 
+import "../style/ReviewPage.css";
+import { auth, db } from "../firebase";
+import Layout from "../components/Layout";
+
+type ReviewFormState = {
+  placementScore: string;
+  placementNote: string;
+  priceScore: string;
+  priceNote: string;
+  costScore: string;
+  costNote: string;
+  overallScore: string;
+  overallNote: string;
+};
 
 export default function ReviewPage() {
   const { id } = useParams();
-  
-  const [review, setReview] = useState({
+  const navigate = useNavigate();
+
+  const [review, setReview] = useState<ReviewFormState>({
     placementScore: "",
     placementNote: "",
     priceScore: "",
@@ -19,76 +31,90 @@ export default function ReviewPage() {
     overallScore: "",
     overallNote: "",
   });
-
   const [housingAddress, setHousingAddress] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  function handleChange(e: ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
     setReview((prev) => ({
       ...prev,
       [name]: value,
     }));
-  };
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const user = auth.currentUser;
 
-    if (!user) {
-      alert("Du må være innlogget");
+    if (!id) {
+      setSubmitError("Fant ikke boligen du prøver å anmelde.");
       return;
     }
 
+    if (!user) {
+      setSubmitError("Du må være innlogget for å sende inn en anmeldelse.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError("");
+
     try {
+      const fallbackName = user.email?.split("@")[0] || "Bruker";
+      const submittedByName = user.displayName || fallbackName;
+
       await addDoc(collection(db, "reviews"), {
         housingId: id,
-        housingAddress: housingAddress,
+        housingAddress,
         userId: user.uid,
+        submittedByName,
+        isAnonymous,
+        likes: [],
         placementScore: Number(review.placementScore),
-        placementNote: review.placementNote,
+        placementNote: review.placementNote.trim(),
         priceScore: Number(review.priceScore),
-        priceNote: review.priceNote,
+        priceNote: review.priceNote.trim(),
         costScore: Number(review.costScore),
-        costNote: review.costNote,
+        costNote: review.costNote.trim(),
         overallScore: Number(review.overallScore),
-        overallNote: review.overallNote,
+        overallNote: review.overallNote.trim(),
         createdAt: serverTimestamp(),
       });
 
-      alert("Anmeldelse sendt")
-    } catch (error: any) {
-      console.error("FULL ERROR:", error);
-      alert(error.message);
+      navigate(`/housing/${id}`);
+    } catch (error) {
+      console.error("Feil ved innsending av anmeldelse:", error);
+      setSubmitError("Kunne ikke sende inn anmeldelsen. Prov igjen.");
+    } finally {
+      setIsSubmitting(false);
     }
-  };
+  }
+
   useEffect(() => {
-  const fetchHousing = async () => {
-    if (!id) return;
+    async function fetchHousing() {
+      if (!id) return;
 
-    const docRef = doc(db, "listings", id);
-    const docSnap = await getDoc(docRef);
+      const docRef = doc(db, "listings", id);
+      const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      setHousingAddress(
-        `${data.address}${data.city ? ", " + data.city : ""}`
-      );
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setHousingAddress(`${data.address}${data.city ? ", " + data.city : ""}`);
+      }
     }
-  };
 
-  fetchHousing();
-}, [id]);
-
+    fetchHousing();
+  }, [id]);
 
   return (
+    <Layout>
     <div className="review-page">
       <header className="review-header">
         <h1>Skriv anmeldelse</h1>
         <p>{housingAddress}</p>
-
       </header>
 
       <form className="review-form" onSubmit={handleSubmit}>
@@ -96,10 +122,11 @@ export default function ReviewPage() {
           <h2>Plassering</h2>
           <label>
             Poeng (1-5)
-            <select 
+            <select
               name="placementScore"
               value={review.placementScore}
               onChange={handleChange}
+              required
             >
               <option value="" disabled>
                 Velg poeng
@@ -113,12 +140,12 @@ export default function ReviewPage() {
           </label>
           <label>
             Kommentar
-            <textarea 
+            <textarea
               name="placementNote"
               value={review.placementNote}
               onChange={handleChange}
               rows={3}
-              placeholder="Kort kommentar om plassering..." 
+              placeholder="Kort kommentar om plassering..."
             />
           </label>
         </section>
@@ -127,10 +154,11 @@ export default function ReviewPage() {
           <h2>Pris</h2>
           <label>
             Poeng (1-5)
-            <select 
+            <select
               name="priceScore"
               value={review.priceScore}
               onChange={handleChange}
+              required
             >
               <option value="" disabled>
                 Velg poeng
@@ -149,7 +177,7 @@ export default function ReviewPage() {
               value={review.priceNote}
               onChange={handleChange}
               rows={3}
-              placeholder="Kort kommentar om pris..." 
+              placeholder="Kort kommentar om pris..."
             />
           </label>
         </section>
@@ -158,10 +186,11 @@ export default function ReviewPage() {
           <h2>Kostnader</h2>
           <label>
             Poeng (1-5)
-            <select 
+            <select
               name="costScore"
               value={review.costScore}
               onChange={handleChange}
+              required
             >
               <option value="" disabled>
                 Velg poeng
@@ -179,8 +208,8 @@ export default function ReviewPage() {
               name="costNote"
               value={review.costNote}
               onChange={handleChange}
-              rows={3} 
-              placeholder="Kort kommentar om kostnader..." 
+              rows={3}
+              placeholder="Kort kommentar om kostnader..."
             />
           </label>
         </section>
@@ -189,10 +218,11 @@ export default function ReviewPage() {
           <h2>Generelt</h2>
           <label>
             Poeng (1-5)
-            <select 
+            <select
               name="overallScore"
               value={review.overallScore}
               onChange={handleChange}
+              required
             >
               <option value="" disabled>
                 Velg poeng
@@ -211,15 +241,38 @@ export default function ReviewPage() {
               value={review.overallNote}
               onChange={handleChange}
               rows={3}
-              placeholder="Kort kommentar om helheten..." 
+              placeholder="Kort kommentar om helheten..."
             />
           </label>
         </section>
 
-        <div className="review-actions">
-          <button type="submit">Send inn</button>
+        <section className="review-section">
+          <h2>Visning av navn</h2>
+          <label className="review-identity-toggle">
+            <input
+              type="checkbox"
+              className="review-identity-toggle__input"
+              checked={isAnonymous}
+              onChange={(e) => setIsAnonymous(e.target.checked)}
+            />
+            <span className="review-identity-toggle__switch" aria-hidden="true">
+              <span className="review-identity-toggle__knob" />
+            </span>
+            <span className="review-identity-toggle__text">
+              {isAnonymous ? "Anonym anmeldelse" : "Vis brukernavn"}
+            </span>
+          </label>
+        </section>
+
+        {submitError && <p className="review-error">{submitError}</p>}
+
+        <div className="review-form-actions">
+          <button type="submit" className="review-submit-button" disabled={isSubmitting}>
+            {isSubmitting ? "Sender..." : "Send inn"}
+          </button>
         </div>
       </form>
     </div>
+    </Layout>
   );
 }

@@ -15,8 +15,7 @@ import { auth } from "./firebase";
 import { Navigate } from "react-router-dom";
 import HousingDetailsPage from "./pages/HousingDetailsPage";
 
-
-
+type ThemeMode = "light" | "dark";
 
 function App() {
   const links = [
@@ -24,6 +23,18 @@ function App() {
     { label: 'Legg inn bolig', to: '/legg-inn-bolig' },
   ]
   const [user, setUser] = useState<User | null>(null);
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
+
+    const savedTheme = window.localStorage.getItem("theme-mode");
+    if (savedTheme === "light" || savedTheme === "dark") {
+      return savedTheme;
+    }
+
+    return "light";
+  });
 
   const adminEmails = [
     "admin1@utleiometer.no",
@@ -41,6 +52,11 @@ function App() {
     return () => unsubscribe(); 
   }, []);
 
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("theme-mode", theme);
+  }, [theme]);
+
 type ProtectedRouteProps = {
   user: User | null;
   children: React.ReactNode;
@@ -53,7 +69,13 @@ function ProtectedRoute({ user, children }: ProtectedRouteProps) {
 
   return (
     <>
-      <NavBar links={links} user={user} isAdmin={isAdmin} />
+      <NavBar
+        links={links}
+        user={user}
+        isAdmin={isAdmin}
+        theme={theme}
+        onToggleTheme={() => setTheme((currentTheme) => (currentTheme === "light" ? "dark" : "light"))}
+      />
       <main className="page-shell">
         <Routes>
           <Route path="/" element={<Home />} />

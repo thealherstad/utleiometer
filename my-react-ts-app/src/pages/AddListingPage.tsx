@@ -1,24 +1,15 @@
 import { useMemo, useState } from "react";
 import "../style/AddListingPage.css";
-import { saveListing } from "../services/listingService";
-
-const AREAS = [
-  "Trondheim",
-  "Oslo",
-  "Bergen",
-  "Stavanger",
-  "Tromsø",
-  "Ålesund",
-  "Annet",
-] as const;
-
-type Area = (typeof AREAS)[number];
+import { DuplicateListingError, saveListing } from "../services/listingService";
+import Layout from "../components/Layout";
+import { auth } from "../firebase";
 
 type FormState = {
   address: string;
-  area: "" | Area;
   postalCode: string;
+  poststed: string;
   city: string;
+  price: string;
   notes: string;
   imageUrl: string;
 };
@@ -27,20 +18,18 @@ type TouchedState = Partial<Record<keyof FormState, boolean>>;
 
 type ErrorsState = Partial<Record<keyof FormState, string>>;
 
-type SubmittedState = FormState & { createdAt: string };
-
 export default function AddListingPage() {
   const [form, setForm] = useState<FormState>({
     address: "",
-    area: "",
     postalCode: "",
+    poststed: "",
     city: "",
+    price: "",
     notes: "",
     imageUrl: "",
   });
 
   const [touched, setTouched] = useState<TouchedState>({});
-  const [submitted, setSubmitted] = useState<SubmittedState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -49,7 +38,6 @@ export default function AddListingPage() {
     const e: ErrorsState = {};
 
     if (!form.address.trim()) e.address = "Skriv inn adresse.";
-    if (!form.area) e.area = "Velg område.";
 
     if (form.postalCode && !/^\d{4}$/.test(form.postalCode)) {
       e.postalCode = "Postnummer må være 4 siffer.";
@@ -57,6 +45,10 @@ export default function AddListingPage() {
 
     if (form.city && form.city.trim().length < 2) {
       e.city = "By må være minst 2 tegn.";
+    }
+
+    if (!form.price.trim()) {
+      e.price = "Pris er obligatorisk."
     }
 
     if (form.notes && form.notes.length > 250) {
@@ -85,14 +77,21 @@ export default function AddListingPage() {
 
     setTouched({
       address: true,
-      area: true,
       postalCode: true,
+      poststed: true,
       city: true,
+      price: true,
       notes: true,
     });
 
     if (!isValid) {
       console.log("❌ Form er IKKE valid - stopper her");
+      return;
+    }
+
+    if (!auth.currentUser) {
+      setErrorMessage("Du må være innlogget for å sende inn bolig.");
+      setSuccessMessage(null);
       return;
     }
 
@@ -105,35 +104,33 @@ export default function AddListingPage() {
       // Lagre til Firestore
       console.log("Kaller saveListing med:", {
         address: form.address,
-        area: form.area as string,
         postalCode: form.postalCode,
+        poststed: form.poststed,
         city: form.city,
+        price: form.price,
         notes: form.notes,
       });
       
       await saveListing({
         address: form.address,
-        area: form.area as string,
         postalCode: form.postalCode,
+        poststed: form.poststed,
         city: form.city,
+        price: Number(form.price),
         notes: form.notes,
         imageUrl: form.imageUrl || "",
       });
 
       console.log("✅ saveListing fullført!");
-      // Vis suksessmelding
-      setSuccessMessage("Boligen er lagret!");
-      setSubmitted({
-        ...form,
-        createdAt: new Date().toLocaleString(),
-      });
+      setSuccessMessage("Boligen er lagret.");
 
       // Nullstill skjemaet
       setForm({
         address: "",
-        area: "",
         postalCode: "",
+        poststed: "",
         city: "",
+        price: "",
         notes: "",
         imageUrl: "",
       });
@@ -143,22 +140,26 @@ export default function AddListingPage() {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       console.error("❌ FEIL ved lagring:", error);
-      setErrorMessage("Feil ved lagring av bolig. Prøv igjen.");
+      if (error instanceof DuplicateListingError) {
+        setErrorMessage("Denne boligen er allerede registrert.");
+      } else {
+        setErrorMessage("Feil ved lagring av bolig. Prøv igjen.");
+      }
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
+    <Layout>
     <div className="page">
       <header className="header">
         <h1>Legg inn bolig</h1>
-        <p>Fyll inn adresse og område.</p>
       </header>
 
       <main className="content">
         <section className="card">
-          <h2>Skjema</h2>
+          <h2>Boligdetaljer</h2>
 
           <form className="form" onSubmit={handleSubmit} noValidate>
             <div className="grid">
@@ -179,23 +180,18 @@ export default function AddListingPage() {
               </div>
 
               <div className="field">
-                <label htmlFor="area">Område *</label>
-                <select
-                  id="area"
-                  value={form.area}
-                  onChange={(e) => setField("area", e.target.value as FormState["area"])}
-                  onBlur={() => onBlur("area")}
-                  aria-invalid={!!(touched.area && errors.area)}
-                >
-                  <option value="">Velg område</option>
-                  {AREAS.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
-                {touched.area && errors.area && (
-                  <span className="error">{errors.area}</span>
+                <label htmlFor="price">Pris *</label>
+                <input
+                  id="price"
+                  type="number"
+                  step="1"
+                  min="0"
+                  placeholder="F.eks. 7000"
+                  value={form.price}
+                  onChange={(e) => setField("price", e.target.value)}
+                />
+                {touched.price && errors.price && (
+                  <span className="error">{errors.price}</span>
                 )}
               </div>
 
@@ -212,6 +208,22 @@ export default function AddListingPage() {
                 />
                 {touched.postalCode && errors.postalCode && (
                   <span className="error">{errors.postalCode}</span>
+                )}
+              </div>
+                
+              <div className="field"> 
+                <label htmlFor="area">Poststed (valgfritt)</label>
+                <input
+                  type="text"
+                  id="poststed"
+                  placeholder="Skriv poststed"
+                  value={form.poststed || ""}
+                  onChange={(e) => setField("poststed", e.target.value)}
+                  onBlur={() => onBlur("poststed")}
+                  aria-invalid={!!(touched.poststed && errors.poststed)}
+                  />
+                {touched.poststed && errors.poststed && (
+                  <span className="error">{errors.poststed}</span>
                 )}
               </div>
 
@@ -280,14 +292,14 @@ export default function AddListingPage() {
                 onClick={() => {
                   setForm({
                     address: "",
-                    area: "",
                     postalCode: "",
+                    poststed: "",
+                    price: "",
                     city: "",
                     notes: "",
                     imageUrl: "",
                   });
                   setTouched({});
-                  setSubmitted(null);
                   setSuccessMessage(null);
                   setErrorMessage(null);
                 }}
@@ -312,7 +324,8 @@ export default function AddListingPage() {
           </form>
         </section>
 
-        <section className="card">
+        {/* <section className="card">
+
           <h2>Forhåndsvisning</h2>
           <div className="preview">
             <div className="row">
@@ -358,8 +371,9 @@ export default function AddListingPage() {
               <pre className="code">{JSON.stringify(submitted, null, 2)}</pre>
             </div>
           )}
-        </section>
+        </section> */}
       </main>
     </div>
+  </Layout>
   );
 }

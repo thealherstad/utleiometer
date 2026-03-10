@@ -1,11 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { deleteUser, onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
+import {
+  deleteUser,
+  EmailAuthProvider,
+  onAuthStateChanged,
+  reauthenticateWithCredential,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
 import type { User } from "firebase/auth";
-import { collection, deleteDoc, doc, getDocs, query, updateDoc, where , getDoc} from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+  getDoc,
+  writeBatch,
+} from "firebase/firestore";
 import "../style/LoginPage.css";
 import "../style/ProfilePage.css";
+import Layout from "../components/Layout";
 
 type UserReview = {
   id: string;
@@ -57,6 +75,49 @@ const getFirebaseErrorMessage = (error: unknown) => {
   return "Ukjent feil";
 };
 
+const getDeleteProfileErrorMessage = (error: unknown) => {
+  if (typeof error === "object" && error !== null && "code" in error) {
+    const code = String((error as { code?: unknown }).code);
+
+    if (code === "auth/wrong-password") {
+      return "Feil passord. Prøv igjen.";
+    }
+
+    if (code === "auth/invalid-credential") {
+      return "Ugyldig innlogging. Logg inn på nytt og prøv igjen.";
+    }
+
+    if (code === "auth/requires-recent-login") {
+      return "Av sikkerhetsgrunner må du logge inn på nytt før kontoen kan slettes.";
+    }
+  }
+
+  return `Noe gikk galt ved sletting av profilen: ${getFirebaseErrorMessage(error)}`;
+};
+
+const deleteReviewsForUser = async (userId: string) => {
+  const userReviewsQuery = query(collection(db, "reviews"), where("userId", "==", userId));
+  const userReviewsSnapshot = await getDocs(userReviewsQuery);
+
+  if (userReviewsSnapshot.empty) {
+    return;
+  }
+
+  const reviewDocs = userReviewsSnapshot.docs;
+  const chunkSize = 400;
+
+  for (let index = 0; index < reviewDocs.length; index += chunkSize) {
+    const chunk = reviewDocs.slice(index, index + chunkSize);
+    const batch = writeBatch(db);
+
+    chunk.forEach((reviewDoc) => {
+      batch.delete(reviewDoc.ref);
+    });
+
+    await batch.commit();
+  }
+};
+
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<User | null>(auth.currentUser);
@@ -69,6 +130,7 @@ const ProfilePage: React.FC = () => {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isEditingReview, setIsEditingReview] = useState(false);
   const [savingReview, setSavingReview] = useState(false);
+  const [deletingProfile, setDeletingProfile] = useState(false);
   const [reviewForm, setReviewForm] = useState<ReviewFormState>(emptyReviewForm);
 
   useEffect(() => {
@@ -193,12 +255,38 @@ const ProfilePage: React.FC = () => {
       return;
     }
 
+    if (!user.email) {
+      alert("Fant ikke e-post for brukeren. Logg inn på nytt og prøv igjen.");
+      return;
+    }
+
     try {
+      setDeletingProfile(true);
+
+      const password = window.prompt("Skriv inn passordet ditt for å bekrefte sletting av profil:");
+
+      if (password === null) {
+        return;
+      }
+
+      if (!password.trim()) {
+        alert("Passord kan ikke være tomt.");
+        return;
+      }
+
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+
+      await deleteReviewsForUser(user.uid);
+
+      await deleteDoc(doc(db, "users", user.uid));
       await deleteUser(user);
-      await signOut(auth);
       navigate("/logg-inn");
-    } catch {
-      alert("Noe gikk galt ved sletting av profilen");
+    } catch (error) {
+      console.error("Feil ved sletting av profil:", error);
+      alert(getDeleteProfileErrorMessage(error));
+    } finally {
+      setDeletingProfile(false);
     }
   };
 
@@ -324,6 +412,7 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
+    <Layout>
     <div className="login-wrapper">
       <div className="login-card profile-card">
         <h2 className="login-title">Profil</h2>
@@ -404,7 +493,7 @@ const ProfilePage: React.FC = () => {
                 }`}
               >
                 <p className="profile-review-line">
-                  <strong>Bolig:</strong> {review.housingId || "Ukjent"}
+                  <strong>Bolig:</strong> {review.housingAddress || "Ukjent"}
                 </p>
                 <p className="profile-review-line">
                   <strong>Generelt score:</strong> {review.overallScore ?? "-"}/5
@@ -657,11 +746,13 @@ const ProfilePage: React.FC = () => {
         <button
           className="login-button profile-delete-profile-button"
           onClick={handleDeleteProfile}
+          disabled={deletingProfile}
         >
-          Slett profil
+          {deletingProfile ? "Sletter profil..." : "Slett profil"}
         </button>
       </div>
     </div>
+  </Layout>
   );
 };
 

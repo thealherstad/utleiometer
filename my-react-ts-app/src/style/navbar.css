@@ -1,11 +1,12 @@
 .navbar {
   width: 100%;
-  background: #fff;
-  box-shadow: 0 1px 6px rgba(16,24,40,0.06);
+  background: var(--surface-primary);
+  box-shadow: 0 1px 6px rgba(16,24,40,0.08);
   position: sticky;
   top: 0;
   z-index: 40;
   font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+  transition: background-color 160ms ease, color 160ms ease;
 }
 .navbar__inner {
   max-width: 1280px;
@@ -32,24 +33,51 @@
   grid-column: 3;
   justify-self: end;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 .navbar__action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #111827;
-  color: #fff;
+  background: var(--accent-strong);
+  color: var(--accent-contrast);
   border: none;
-  padding: 0.5rem 0.9rem;
+  width: 118px;
+  height: 42px;
+  padding: 0;
   border-radius: 999px;
   cursor: pointer;
   font-weight: 600;
   font-size: clamp(1rem, 1.5vw, 1.25rem);
   text-decoration: none;
+  white-space: nowrap;
 }
 .navbar__action:hover,
 .navbar__action:focus {
-  background: #0b1220;
+  filter: brightness(0.96);
+  outline: none;
+}
+.navbar__theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 118px;
+  height: 42px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  padding: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  white-space: nowrap;
+}
+.navbar__theme-toggle:hover,
+.navbar__theme-toggle:focus {
+  background: var(--surface-hover);
   outline: none;
 }
 .navbar__links {
@@ -63,26 +91,26 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #111827;
+  color: var(--text-primary);
   text-decoration: none;
   padding: 0.6rem 1.2rem; 
   border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-secondary);
   font-weight: 500;
   font-size: clamp(1rem, 1.5vw, 1.25rem);
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 .navbar__link:hover,
 .navbar__link:focus {
-  background: #eef2ff;
-  border-color: #c7d2fe;
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
   outline: none;
 }
 .navbar__link.is-active {
-  background: #111827;
-  color: #fff;
-  border-color: #111827;
+  background: var(--accent-strong);
+  color: var(--accent-contrast);
+  border-color: var(--accent-strong);
 }
 .logo-img {
   display: block;

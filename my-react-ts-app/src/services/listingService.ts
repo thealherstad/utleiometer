@@ -5,13 +5,46 @@ import { db } from "../firebase";
 export type Listing = {
   id: string;
   address: string;
-  area: string;
   postalCode: string;
+  poststed: string;
   city: string;
+  price: number;
   notes: string;
   imageUrl?: string;
   createdAt: Timestamp;
 };
+
+export class DuplicateListingError extends Error {
+  code: string;
+
+  constructor(message: string) {
+    super(message);
+    this.name = "DuplicateListingError";
+    this.code = "DUPLICATE_LISTING";
+  }
+}
+
+function normalizeValue(value: string) {
+  return value.trim().toLowerCase();
+}
+
+async function hasDuplicateListing(address: string, postalCode: string): Promise<boolean> {
+  const normalizedAddress = normalizeValue(address);
+  const normalizedPostalCode = normalizeValue(postalCode);
+
+  const querySnapshot = await getDocs(collection(db, "listings"));
+
+  return querySnapshot.docs.some((docSnapshot) => {
+    const data = docSnapshot.data();
+    const existingAddress = normalizeValue(data.address || "");
+    const existingPostalCode = normalizeValue(data.postalCode || "");
+
+    return (
+      existingAddress === normalizedAddress &&
+      existingPostalCode === normalizedPostalCode
+    );
+  });
+}
 
 // Funksjon for å lagre ny bolig til Firestore
 export async function saveListing(listingData: Omit<Listing, "id" | "createdAt">) {
@@ -23,6 +56,11 @@ export async function saveListing(listingData: Omit<Listing, "id" | "createdAt">
     const listingsCollection = collection(db, "listings");
     console.log("Steg 2: Collection hentet:", listingsCollection);
     
+    const isDuplicate = await hasDuplicateListing(listingData.address, listingData.postalCode);
+    if (isDuplicate) {
+      throw new DuplicateListingError("Boligen er allerede registrert.");
+    }
+
     console.log("Steg 3: Kaller addDoc...");
     const dataToSave = {
       ...listingData,
@@ -62,6 +100,7 @@ export async function getAllListings(): Promise<Listing[]> {
         city: data.city || "",
         notes: data.notes || "",
         imageUrl: data.imageUrl || "",
+        price: data.price ?? 0,
         createdAt: data.createdAt || Timestamp.now(),
       });
     });
