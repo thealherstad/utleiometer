@@ -4,6 +4,7 @@ import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/fires
 
 import "../style/ReviewPage.css";
 import { auth, db } from "../firebase";
+import Layout from "../components/Layout";
 
 type ReviewFormState = {
   placementScore: string;
@@ -108,6 +109,7 @@ export default function ReviewPage() {
   }, [id]);
 
   return (
+    <Layout>
     <div className="review-page">
       <header className="review-header">
         <h1>Skriv anmeldelse</h1>
@@ -270,5 +272,6 @@ export default function ReviewPage() {
         </div>
       </form>
     </div>
+    </Layout>
   );
 }

@@ -5,6 +5,7 @@ import { db } from '../firebase'
 import HomeList from './HomeList'
 import type { Home } from './HomeCard'
 import { getAllListings } from '../services/listingService'
+import Layout from '../components/Layout'
 
 type ReviewRecord = {
   housingId?: string
@@ -178,6 +179,7 @@ export default function HomesView() {
   }
 
   return (
+    <Layout>
     <section className="homes-page">
       <header className="homes-header">
         <h1>Boligoversikt</h1>
@@ -328,5 +330,6 @@ export default function HomesView() {
         </div>
       )}
     </section>
+    </Layout>
   )
 }

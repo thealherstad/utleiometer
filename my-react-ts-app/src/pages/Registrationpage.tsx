@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase';
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import Layout from '../components/Layout';
 
 const RegistrationPage: React.FC = () => {
     const [email, setEmail] = useState<string>('');
@@ -45,6 +46,7 @@ const RegistrationPage: React.FC = () => {
     };
 
     return (
+        <Layout>
         <div className="register-wrapper">
             <div className="register-card">
             <h2 className="register-title">Registrer bruker</h2>
@@ -95,6 +97,7 @@ const RegistrationPage: React.FC = () => {
             </form>
         </div>
     </div>
+    </Layout>
     );
 
 }; 

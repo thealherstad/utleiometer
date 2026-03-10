@@ -23,6 +23,7 @@ import {
 } from "firebase/firestore";
 import "../style/LoginPage.css";
 import "../style/ProfilePage.css";
+import Layout from "../components/Layout";
 
 type UserReview = {
   id: string;
@@ -411,6 +412,7 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
+    <Layout>
     <div className="login-wrapper">
       <div className="login-card profile-card">
         <h2 className="login-title">Profil</h2>
@@ -750,6 +752,7 @@ const ProfilePage: React.FC = () => {
         </button>
       </div>
     </div>
+  </Layout>
   );
 };
 

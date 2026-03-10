@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import "../style/AddListingPage.css";
 import { DuplicateListingError, saveListing } from "../services/listingService";
+import Layout from "../components/Layout";
 
 type FormState = {
   address: string;
@@ -151,6 +152,7 @@ export default function AddListingPage() {
   }
 
   return (
+    <Layout>
     <div className="page">
       <header className="header">
         <h1>Legg inn bolig</h1>
@@ -374,5 +376,6 @@ export default function AddListingPage() {
         </section> */}
       </main>
     </div>
+  </Layout>
   );
 }
