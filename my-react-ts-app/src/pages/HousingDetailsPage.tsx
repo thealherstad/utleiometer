@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase";
-import { collection, doc, getDoc, getDocs, query, where, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { onAuthStateChanged, type User } from "firebase/auth";
 import "../style/HousingDetailsPage.css";
 import Layout from "../components/Layout";
 
@@ -36,12 +45,21 @@ const HousingDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const auth = getAuth();
-  const currentUser = auth.currentUser;
+  const [currentUser, setCurrentUser] = useState<User | null>(auth.currentUser);
 
   const [housing, setHousing] = useState<Housing | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [bounceIds, setBounceIds] = useState<string[]>([]);
+  const [likeInFlightIds, setLikeInFlightIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+
+    return () => unsubscribe();
+  }, [auth]);
 
   // Hent bolig
   useEffect(() => {
@@ -58,100 +76,114 @@ const HousingDetailsPage: React.FC = () => {
   // Hent anmeldelser
   useEffect(() => {
     if (!id) return;
-    const fetchReviews = async () => {
-      setLoadingReviews(true);
-      try {
-        const reviewsQuery = query(collection(db, "reviews"), where("housingId", "==", id));
-        const querySnapshot = await getDocs(reviewsQuery);
+    const reviewsQuery = query(collection(db, "reviews"), where("housingId", "==", id));
 
-        const fetchedReviews: Review[] = await Promise.all(
-          querySnapshot.docs.map(async (docItem) => {
-            const data = docItem.data();
-            let userName = "Anonym";
-            const isAnonymous = Boolean(data.isAnonymous);
+    const unsubscribe = onSnapshot(
+      reviewsQuery,
+      async (querySnapshot) => {
+        setLoadingReviews(true);
+        try {
+          const fetchedReviews: Review[] = await Promise.all(
+            querySnapshot.docs.map(async (docItem) => {
+              const data = docItem.data();
+              let userName = "Anonym";
+              const isAnonymous = Boolean(data.isAnonymous);
 
-            if (!isAnonymous && data.submittedByName) {
-              userName = data.submittedByName;
-            } else if (!isAnonymous && data.userId) {
-              try {
-                const userDoc = await getDoc(doc(db, "users", data.userId));
-                if (userDoc.exists()) {
-                  userName = userDoc.data().displayName || "Anonym";
-                }
-              } catch {}
-            }
+              if (!isAnonymous && data.submittedByName) {
+                userName = data.submittedByName;
+              } else if (!isAnonymous && data.userId) {
+                try {
+                  const userDoc = await getDoc(doc(db, "users", data.userId));
+                  if (userDoc.exists()) {
+                    userName = userDoc.data().displayName || "Anonym";
+                  }
+                } catch {}
+              }
 
-            const likesArray: string[] = data.likes || [];
+              const likesArray: string[] = Array.isArray(data.likes)
+                ? data.likes.filter((uid: unknown): uid is string => typeof uid === "string")
+                : [];
 
-            return {
-              id: docItem.id,
-              userId: data.userId || "",
-              userName,
-              isAnonymous,
-              likes: likesArray,
-              likeCount: likesArray.length,
-              overallScore: data.overallScore ?? 0,
-              overallNote: data.overallNote ?? "",
-              priceScore: data.priceScore ?? 0,
-              priceNote: data.priceNote ?? "",
-              placementScore: data.placementScore ?? 0,
-              placementNote: data.placementNote ?? "",
-              costScore: data.costScore ?? 0,
-              costNote: data.costNote ?? "",
-            };
-          })
-        );
+              return {
+                id: docItem.id,
+                userId: data.userId || "",
+                userName,
+                isAnonymous,
+                likes: likesArray,
+                likeCount: likesArray.length,
+                overallScore: data.overallScore ?? 0,
+                overallNote: data.overallNote ?? "",
+                priceScore: data.priceScore ?? 0,
+                priceNote: data.priceNote ?? "",
+                placementScore: data.placementScore ?? 0,
+                placementNote: data.placementNote ?? "",
+                costScore: data.costScore ?? 0,
+                costNote: data.costNote ?? "",
+              };
+            })
+          );
 
-        fetchedReviews.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
-        setReviews(fetchedReviews);
-      } catch (error) {
-        console.error("Feil ved henting av anmeldelser:", error);
+          fetchedReviews.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
+          setReviews(fetchedReviews);
+        } catch (error) {
+          console.error("Feil ved henting av anmeldelser:", error);
+          setReviews([]);
+        } finally {
+          setLoadingReviews(false);
+        }
+      },
+      (error) => {
+        console.error("Feil ved sanntidslytting av anmeldelser:", error);
         setReviews([]);
-      } finally {
         setLoadingReviews(false);
       }
-    };
-    fetchReviews();
+    );
+
+    return () => unsubscribe();
   }, [id]);
 
   // Toggle like og lagre i Firestore
   const toggleLike = async (reviewId: string) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert("Du må være innlogget for å like en anmeldelse.");
+      return;
+    }
 
-    setReviews((prevReviews) => {
-      const updated = prevReviews.map((review) => {
-        if (review.id !== reviewId) return review;
+    if (likeInFlightIds.includes(reviewId)) {
+      return;
+    }
 
-        const hasLiked = review.likes?.includes(currentUser.uid);
-        const updatedLikes = hasLiked
-          ? review.likes?.filter((uid) => uid !== currentUser.uid) || []
-          : [...(review.likes || []), currentUser.uid];
+    setLikeInFlightIds((prev) => [...prev, reviewId]);
 
-        return { ...review, likes: updatedLikes, likeCount: updatedLikes.length };
-      });
-
-      updated.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
-      setBounceIds(updated.map((r) => r.id));
-      return updated;
-    });
+    setBounceIds([reviewId]);
 
     try {
       const reviewRef = doc(db, "reviews", reviewId);
+      const reviewSnapshot = await getDoc(reviewRef);
 
-      // Hent siste versjon fra Firestore
-      const reviewSnap = await getDoc(reviewRef);
-      if (!reviewSnap.exists()) return;
+      if (!reviewSnapshot.exists()) return;
 
-      const likesFromFirestore: string[] = reviewSnap.data().likes || [];
-      const hasLiked = likesFromFirestore.includes(currentUser.uid);
+      const reviewData = reviewSnapshot.data();
+      const likesArray: string[] = Array.isArray(reviewData.likes)
+        ? reviewData.likes.filter((uid: unknown): uid is string => typeof uid === "string")
+        : [];
 
-      const likesToUpdate = hasLiked
-        ? likesFromFirestore.filter((uid) => uid !== currentUser.uid)
-        : [...likesFromFirestore, currentUser.uid];
+      const hasLiked = likesArray.includes(currentUser.uid);
+      const nextLikes = hasLiked
+        ? likesArray.filter((uid) => uid !== currentUser.uid)
+        : [...likesArray, currentUser.uid];
 
-      await updateDoc(reviewRef, { likes: likesToUpdate });
+      await updateDoc(reviewRef, { likes: nextLikes });
     } catch (error) {
       console.error("Kunne ikke oppdatere likes i Firestore:", error);
+      const errorCode = (error as { code?: string })?.code;
+      if (errorCode === "permission-denied") {
+        alert("Du har ikke tilgang til å like denne anmeldelsen med gjeldende Firestore-regler.");
+      } else {
+        alert("Kunne ikke oppdatere likes akkurat nå. Prøv igjen.");
+      }
+    } finally {
+      setLikeInFlightIds((prev) => prev.filter((id) => id !== reviewId));
     }
 
     setTimeout(() => setBounceIds([]), 600);
@@ -213,13 +245,21 @@ const HousingDetailsPage: React.FC = () => {
                 </div>
 
                 <div className="review-actions">
+                  {(() => {
+                    const hasLiked = review.likes?.includes(currentUser?.uid || "") || false;
+
+                    return (
+                      <>
                   <span
-                    className={`heart ${review.likes?.includes(currentUser?.uid || "") ? "liked" : ""}`}
+                    className={`heart ${hasLiked ? "liked" : ""}`}
                     onClick={() => toggleLike(review.id)}
                   >
                     ♥
                   </span>
                   <span className="like-count">{review.likeCount || 0}</span>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <button className="report-button">Rapporter</button>
