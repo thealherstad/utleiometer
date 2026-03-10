@@ -72,6 +72,7 @@ export default function ReviewPage() {
         userId: user.uid,
         submittedByName,
         isAnonymous,
+        likes: [],
         placementScore: Number(review.placementScore),
         placementNote: review.placementNote.trim(),
         priceScore: Number(review.priceScore),
