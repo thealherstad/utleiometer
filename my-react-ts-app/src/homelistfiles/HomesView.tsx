@@ -6,30 +6,7 @@ import HomeList from './HomeList'
 import type { Home } from './HomeCard'
 import { getAllListings } from '../services/listingService'
 import Layout from '../components/Layout'
-
-type ReviewRecord = {
-  housingId?: string
-  placementScore?: number
-  priceScore?: number
-  costScore?: number
-  overallScore?: number
-}
-
-function calculateAverageReviewScore(review: ReviewRecord) {
-  const scores = [
-    review.placementScore,
-    review.priceScore,
-    review.costScore,
-    review.overallScore,
-  ].filter((score): score is number => typeof score === 'number' && score > 0)
-
-  if (scores.length === 0) {
-    return 0
-  }
-
-  const total = scores.reduce((sum, score) => sum + score, 0)
-  return total / scores.length
-}
+import { calculateAverageReviewScore } from '../services/ratingService'
 
 export default function HomesView() {
   const [homes, setHomes] = useState<Home[]>([])
