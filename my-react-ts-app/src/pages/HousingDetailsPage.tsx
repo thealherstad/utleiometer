@@ -14,6 +14,7 @@ import { getAuth } from "firebase/auth";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import "../style/HousingDetailsPage.css";
 import Layout from "../components/Layout";
+import { calculateListingRating } from "../services/ratingService";
 
 type Review = {
   id: string;
@@ -194,6 +195,7 @@ const HousingDetailsPage: React.FC = () => {
     navigate(`/review/${id}`);
   };
 
+  const rating = calculateListingRating(reviews);
 
   return (
     <Layout>
@@ -202,10 +204,11 @@ const HousingDetailsPage: React.FC = () => {
         <div className="housing-info">
           {housing.imageUrl && <img src={housing.imageUrl} alt={housing.title || "Boligbilde"} className="housing-image" />}
           <div className="housing-text">
-            <h1>{housing.title || "Boligdetaljer"}</h1>
-            <p><strong>Adresse:</strong> {housing.address || "Ikke tilgjengelig"}</p>
+            <h1>{housing.title || "Adresse:"} {housing.address || "Ikke tilgjengelig"}</h1>
             <p><strong>By:</strong> {housing.city || "Ukjent"}</p>
             {housing.price !== undefined && <p><strong>Pris:</strong> {housing.price.toLocaleString()} kr/mnd</p>}
+            <p><strong>Rating:</strong> {rating > 0 ? `${rating}` : "Ingen rating enda"} </p>
+            <p></p>
           </div>
         </div>
       )}
