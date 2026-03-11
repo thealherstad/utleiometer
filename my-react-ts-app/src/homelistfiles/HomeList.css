@@ -110,8 +110,8 @@
   height: 1.4rem;
   padding: 0 0.35rem;
   border-radius: 999px;
-  background: #60a5fa;
-  color: #0f172a;
+  background: rgb(0, 153, 153);
+  color: #ffffff;
   font-size: 0.75rem;
 }
 
@@ -263,19 +263,32 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .home-card h3 {
   margin: 0 0 0.55rem;
   font-size: 1.1rem;
   color: var(--text-primary);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .address {
   color: var(--text-secondary);
   margin: 0 0 0.45rem;
   font-size: 0.95rem;
+  line-height: 1.35;
+  min-height: calc(1.35em * 2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .price {
@@ -283,17 +296,32 @@
   color: var(--text-primary);
   margin: 0 0 0.45rem;
   font-size: 1rem;
+  line-height: 1.35;
+  min-height: calc(1.35em * 2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .rating {
   color: #f59e0b;
   font-weight: 600;
   margin: 0;
+  line-height: 1.35;
+  min-height: calc(1.35em * 2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .home-image {
   width: 130px;
   height: 100px;
+  min-height: 100px;
   object-fit: cover;
   border-radius: 10px;
   flex-shrink: 0;
@@ -331,5 +359,6 @@
   .home-image {
     width: 100%;
     height: 170px;
+    min-height: 170px;
   }
 }
