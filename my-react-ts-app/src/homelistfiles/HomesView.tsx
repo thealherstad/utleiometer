@@ -7,6 +7,7 @@ import type { Home } from './HomeCard'
 import { getAllListings } from '../services/listingService'
 import Layout from '../components/Layout'
 import { calculateAverageReviewScore } from '../services/ratingService'
+import type { ReviewRecord } from '../services/ratingService'
 
 export default function HomesView() {
   const [homes, setHomes] = useState<Home[]>([])
@@ -32,7 +33,7 @@ export default function HomesView() {
         const ratingAccumulator = new Map<string, { total: number; count: number }>()
 
         reviewsSnapshot.forEach((docItem) => {
-          const data = docItem.data() as ReviewRecord
+          const data = docItem.data() as ReviewRecord & { housingId?: string }
           const housingId = data.housingId
 
           if (!housingId) {

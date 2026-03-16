@@ -1,4 +1,4 @@
-type ReviewRecord = {
+export type ReviewRecord = {
     placementScore?: number
     priceScore?: number
     costScore?: number
