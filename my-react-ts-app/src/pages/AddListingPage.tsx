@@ -134,7 +134,7 @@ export default function AddListingPage() {
 
       setTouched({});
 
-      // Vent litt før redirect slik at bruker ser meldingen
+      // Wait briefly before redirect so the user can see the success message
       setTimeout(() => {
         navigate("/boliger");
       }, 1500);
