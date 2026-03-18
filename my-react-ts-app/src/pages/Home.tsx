@@ -16,6 +16,12 @@ type MapPoint = {
 type GeocodeResult = {
   lat: number;
   lon: number;
+  displayName: string;
+  road?: string;
+  houseNumber?: string;
+  postcode?: string;
+  city?: string;
+  localities?: string[];
 };
 
 declare global {
@@ -25,8 +31,24 @@ declare global {
 }
 
 const QUICK_FALLBACKS: Record<string, GeocodeResult> = {
-  "hogskoleringen 1 trondheim": { lat: 63.41957, lon: 10.40204 },
-  "høgskoleringen 1 trondheim": { lat: 63.41957, lon: 10.40204 },
+  "hogskoleringen 1 trondheim": {
+    lat: 63.41957,
+    lon: 10.40204,
+    displayName: "Hogskoleringen 1, Trondheim, Norge",
+    road: "Hogskoleringen",
+    houseNumber: "1",
+    postcode: "7034",
+    city: "Trondheim",
+  },
+  "høgskoleringen 1 trondheim": {
+    lat: 63.41957,
+    lon: 10.40204,
+    displayName: "Høgskoleringen 1, Trondheim, Norge",
+    road: "Høgskoleringen",
+    houseNumber: "1",
+    postcode: "7034",
+    city: "Trondheim",
+  },
 };
 
 function normalizeLocationText(value: string) {
@@ -50,7 +72,113 @@ function isLikelyValidAddress(value: string) {
   const text = value.trim();
   const hasLetter = /[a-zA-Z]/.test(text);
   const hasNumber = /\d/.test(text);
-  return text.length >= 6 && hasLetter && hasNumber;
+  const streetPart = text.replace(/\s+\d+[a-zA-Z]?$/, "").trim();
+  const hasStreetSuffix =
+    /(gate|gata|vei|veien|vegen|ringen|ring|all[eé]|plass|bakken|lia|stien|terrasse|tunet|svingen)$/i.test(
+      streetPart,
+    );
+  const isClearlyFake = /(fake|test|asdf|qwerty|ikkeher|ingensteds|ukjent)/i.test(text);
+  return text.length >= 6 && hasLetter && hasNumber && (hasStreetSuffix || streetPart.split(/\s+/).length >= 2) && !isClearlyFake;
+}
+
+function isValidPostalCode(value: string) {
+  return /^\d{4}$/.test(value.trim());
+}
+
+function splitAddress(address: string) {
+  const trimmed = address.trim();
+  const match = trimmed.match(/^(.*?)[,\s]+(\d+[a-zA-Z]?)$/);
+  if (match) {
+    return {
+      street: match[1].trim(),
+      houseNumber: match[2].toLowerCase(),
+    };
+  }
+
+  return {
+    street: trimmed,
+    houseNumber: "",
+  };
+}
+
+function resolveLocality(poststed: string, city: string) {
+  const normalizedPoststed = poststed.trim();
+  const normalizedCity = city.trim();
+  const hasLetters = /[a-zA-ZæøåÆØÅ]/.test(normalizedPoststed);
+
+  if (hasLetters) {
+    return normalizedPoststed;
+  }
+
+  if (normalizedCity.length > 0) {
+    return normalizedCity;
+  }
+
+  return normalizedPoststed;
+}
+
+function normalizeCityName(value: string) {
+  return normalizeKey(value).replace(/\bkommune\b/g, "").trim();
+}
+
+function isCityMatch(inputCity: string, returnedCity: string, displayName: string, localities: string[]) {
+  const normalizedInput = normalizeCityName(inputCity);
+  if (!normalizedInput) {
+    return false;
+  }
+
+  const normalizedCandidates = [
+    normalizeCityName(returnedCity),
+    normalizeCityName(displayName),
+    ...localities.map((value) => normalizeCityName(value)),
+  ].filter(Boolean);
+
+  return normalizedCandidates.some(
+    (candidate) =>
+      candidate.includes(normalizedInput) ||
+      normalizedInput.includes(candidate),
+  );
+}
+
+function isStrictAddressMatch(
+  inputAddress: string,
+  inputPostalCode: string,
+  inputCity: string,
+  geocode: GeocodeResult,
+) {
+  const input = splitAddress(inputAddress);
+  const inputStreet = normalizeKey(input.street);
+  const geocodeStreet = normalizeKey(geocode.road || geocode.displayName || "");
+
+  const streetMatches =
+    geocodeStreet.includes(inputStreet) ||
+    inputStreet.includes(geocodeStreet);
+
+  if (!streetMatches) {
+    return false;
+  }
+
+  if (!input.houseNumber) {
+    return false;
+  }
+
+  const returnedHouseNumber = normalizeKey(geocode.houseNumber || "");
+  if (returnedHouseNumber !== input.houseNumber) {
+    return false;
+  }
+
+  const normalizedInputPostalCode = inputPostalCode.trim();
+  const normalizedReturnedPostalCode = (geocode.postcode || "").trim();
+  if (!(normalizedInputPostalCode.length > 0 && normalizedInputPostalCode === normalizedReturnedPostalCode)) {
+    return false;
+  }
+
+  return isCityMatch(
+    inputCity,
+    geocode.city || "",
+    geocode.displayName || "",
+    geocode.localities || [],
+  );
 }
 
 async function loadLeaflet() {
@@ -88,19 +216,30 @@ async function loadLeaflet() {
   });
 }
 
-async function geocodeAddress(query: string) {
+async function geocodeAddress(query: string): Promise<GeocodeResult[]> {
   const cacheKey = `geo:${query.toLowerCase()}`;
 
   try {
     const cached = window.localStorage.getItem(cacheKey);
     if (cached) {
-      return JSON.parse(cached) as GeocodeResult;
+      const parsed = JSON.parse(cached) as unknown;
+      if (Array.isArray(parsed)) {
+        return parsed.filter(
+          (item): item is GeocodeResult =>
+            typeof item === "object" &&
+            item !== null &&
+            typeof (item as GeocodeResult).lat === "number" &&
+            typeof (item as GeocodeResult).lon === "number" &&
+            typeof (item as GeocodeResult).displayName === "string",
+        );
+      }
+      window.localStorage.removeItem(cacheKey);
     }
   } catch {
     // ignore cache read errors
   }
 
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+  const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`;
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), 1800);
 
@@ -113,28 +252,58 @@ async function geocodeAddress(query: string) {
     });
 
     if (!response.ok) {
-      return null;
+      return [];
     }
 
-    const results = (await response.json()) as Array<{ lat: string; lon: string }>;
+    const results = (await response.json()) as Array<{
+      lat: string;
+      lon: string;
+      display_name?: string;
+      address?: {
+        road?: string;
+        pedestrian?: string;
+        house_number?: string;
+        postcode?: string;
+        city?: string;
+        town?: string;
+        village?: string;
+        municipality?: string;
+        city_district?: string;
+        suburb?: string;
+        borough?: string;
+        county?: string;
+      };
+    }>;
     if (!results.length) {
-      return null;
+      return [];
     }
 
-    const result = {
-      lat: Number(results[0].lat),
-      lon: Number(results[0].lon),
-    };
+    const parsedResults: GeocodeResult[] = results.map((item) => ({
+      lat: Number(item.lat),
+      lon: Number(item.lon),
+      displayName: item.display_name || "",
+      road: item.address?.road || item.address?.pedestrian || "",
+      houseNumber: item.address?.house_number || "",
+      postcode: item.address?.postcode || "",
+      city: item.address?.city || item.address?.town || item.address?.village || "",
+      localities: [
+        item.address?.municipality || "",
+        item.address?.city_district || "",
+        item.address?.suburb || "",
+        item.address?.borough || "",
+        item.address?.county || "",
+      ].filter(Boolean),
+    }));
 
     try {
-      window.localStorage.setItem(cacheKey, JSON.stringify(result));
+      window.localStorage.setItem(cacheKey, JSON.stringify(parsedResults));
     } catch {
       // ignore cache write errors
     }
 
-    return result;
+    return parsedResults;
   } catch {
-    return null;
+    return [];
   } finally {
     window.clearTimeout(timeoutId);
   }
@@ -148,9 +317,10 @@ async function geocodeListing(listing: {
   city: string;
 }) {
   const rawAddress = listing.address.trim();
-  const rawCity = (listing.poststed || listing.city).trim();
+  const rawCity = resolveLocality(listing.poststed, listing.city);
+  const rawPostalCode = listing.postalCode.trim();
 
-  if (!isLikelyValidAddress(rawAddress) || rawCity.length === 0) {
+  if (!isLikelyValidAddress(rawAddress) || rawCity.length === 0 || !/^\d{4}$/.test(rawPostalCode)) {
     return null;
   }
 
@@ -161,19 +331,21 @@ async function geocodeListing(listing: {
 
   const normalizedAddress = normalizeLocationText(rawAddress);
   const normalizedCity = normalizeLocationText(rawCity);
-  const normalizedPostalCode = normalizeLocationText(listing.postalCode);
 
   const queries = [
+    `${rawAddress}, ${rawPostalCode} ${rawCity}, Norge`,
     `${rawAddress}, ${rawCity}, Norge`,
+    `${normalizedAddress}, ${rawPostalCode} ${normalizedCity}, Norge`,
     `${normalizedAddress}, ${normalizedCity}, Norge`,
-    `${normalizedAddress}, ${normalizedPostalCode} ${normalizedCity}, Norge`,
-    `${normalizedPostalCode} ${normalizedCity}, Norge`,
   ];
 
   for (const query of queries) {
-    const match = await geocodeAddress(query);
-    if (match) {
-      return match;
+    const matches = await geocodeAddress(query);
+    const strictMatch = matches.find((match) =>
+      isStrictAddressMatch(rawAddress, rawPostalCode, rawCity, match),
+    );
+    if (strictMatch) {
+      return strictMatch;
     }
   }
 
@@ -207,6 +379,8 @@ export default function Home(): JSX.Element {
         }
 
         const pointsWithCoordinates: MapPoint[] = listings
+          .filter((listing) => isLikelyValidAddress(listing.address))
+          .filter((listing) => isValidPostalCode(listing.postalCode))
           .filter((listing) => typeof listing.latitude === "number" && typeof listing.longitude === "number")
           .map((listing) => ({
             id: listing.id,
@@ -220,21 +394,18 @@ export default function Home(): JSX.Element {
         }
 
         const unresolved = listings
-          .filter((listing) => !(typeof listing.latitude === "number" && typeof listing.longitude === "number"))
+          .filter(
+            (listing) =>
+              listing.geoVerified !== true ||
+              !(typeof listing.latitude === "number" && typeof listing.longitude === "number"),
+          )
           .filter((listing) => isLikelyValidAddress(listing.address));
 
-        const requestBudget = 40;
-        const timeBudgetMs = 12000;
+        const requestBudget = 200;
+        const timeBudgetMs = 30000;
         const deadline = Date.now() + timeBudgetMs;
         const geocodedPoints = [...pointsWithCoordinates];
-
-        const prioritized = unresolved.sort((a, b) => {
-          const aCity = normalizeKey(a.poststed || a.city);
-          const bCity = normalizeKey(b.poststed || b.city);
-          if (aCity === "trondheim" && bCity !== "trondheim") return -1;
-          if (bCity === "trondheim" && aCity !== "trondheim") return 1;
-          return 0;
-        });
+        const prioritized = [...unresolved];
 
         let processed = 0;
         for (let index = 0; index < prioritized.length; index += 6) {
@@ -257,6 +428,7 @@ export default function Home(): JSX.Element {
                 await updateDoc(doc(db, "listings", listing.id), {
                   latitude: match.lat,
                   longitude: match.lon,
+                  geoVerified: true,
                 });
               } catch {
                 // Ignore permission/network errors for write-back.

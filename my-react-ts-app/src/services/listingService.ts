@@ -13,6 +13,7 @@ export type Listing = {
   imageUrl?: string;
   latitude?: number;
   longitude?: number;
+  geoVerified?: boolean;
   createdAt: Timestamp;
 };
 
@@ -104,6 +105,7 @@ export async function getAllListings(): Promise<Listing[]> {
         imageUrl: data.imageUrl || "",
         latitude: typeof data.latitude === "number" ? data.latitude : undefined,
         longitude: typeof data.longitude === "number" ? data.longitude : undefined,
+        geoVerified: data.geoVerified === true,
         price: data.price ?? 0,
         createdAt: data.createdAt || Timestamp.now(),
       });
