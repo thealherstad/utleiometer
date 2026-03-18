@@ -134,21 +134,30 @@
   color: var(--text-secondary);
 }
 
+.review-card.reported {
+  border: 2px solid #e51624;
+  background-color: rgba(229, 22, 36, 0.05);
+}
+
 .report-button {
   position: absolute;
   bottom: 12px;
   right: 16px;
-  padding: 0.6rem 1.2rem;
+  width: 160px;
+  padding: 0.6rem 0;
   font-size: 0.95rem;
-  background-color: var(--surface-primary);
-  color: var(--text-primary);
+  background-color: #000000; /* svart knapp */
+  color: #ffffff; /* hvit tekst */
   border-radius: 6px;
   border: 1px solid var(--border-subtle);
   cursor: pointer;
+  text-align: center;
+  white-space: nowrap; /* forhindrer linjeskift */
+  transition: background 0.2s;
 }
 
 .report-button:hover {
-  background: var(--surface-hover);
+  background-color: #333333; /* litt lysere svart ved hover */
 }
 
 @media (max-width: 768px) {

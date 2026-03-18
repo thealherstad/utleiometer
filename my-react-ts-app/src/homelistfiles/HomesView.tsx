@@ -6,29 +6,19 @@ import HomeList from './HomeList'
 import type { Home } from './HomeCard'
 import { getAllListings } from '../services/listingService'
 import Layout from '../components/Layout'
+import { calculateAverageReviewScore } from '../services/ratingService'
+import type { ReviewRecord } from '../services/ratingService'
 
-type ReviewRecord = {
-  housingId?: string
-  placementScore?: number
-  priceScore?: number
-  costScore?: number
-  overallScore?: number
-}
+const FILTER_STORAGE_KEY = 'homes-view-filters'
+const VALID_MINIMUM_RATINGS = ['0', '1', '2', '3', '4', '5']
+const VALID_SORT_OPTIONS = ['relevance', 'price-asc', 'price-desc', 'rating-desc', 'place']
 
-function calculateAverageReviewScore(review: ReviewRecord) {
-  const scores = [
-    review.placementScore,
-    review.priceScore,
-    review.costScore,
-    review.overallScore,
-  ].filter((score): score is number => typeof score === 'number' && score > 0)
-
-  if (scores.length === 0) {
-    return 0
-  }
-
-  const total = scores.reduce((sum, score) => sum + score, 0)
-  return total / scores.length
+type StoredHomesFilters = {
+  searchTerm: string
+  selectedPlace: string
+  minimumRating: string
+  maximumPrice: number | null
+  sortBy: string
 }
 
 export default function HomesView() {
@@ -41,6 +31,49 @@ export default function HomesView() {
   const [minimumRating, setMinimumRating] = useState('0')
   const [maximumPrice, setMaximumPrice] = useState<number | null>(null)
   const [sortBy, setSortBy] = useState('relevance')
+  const [hasRestoredFilters, setHasRestoredFilters] = useState(false)
+
+  useEffect(() => {
+    try {
+      const savedFilters = localStorage.getItem(FILTER_STORAGE_KEY)
+
+      if (!savedFilters) {
+        return
+      }
+
+      const parsedFilters = JSON.parse(savedFilters) as Partial<StoredHomesFilters>
+
+      if (typeof parsedFilters.searchTerm === 'string') {
+        setSearchTerm(parsedFilters.searchTerm)
+      }
+
+      if (typeof parsedFilters.selectedPlace === 'string') {
+        setSelectedPlace(parsedFilters.selectedPlace)
+      }
+
+      if (
+        typeof parsedFilters.minimumRating === 'string' &&
+        VALID_MINIMUM_RATINGS.includes(parsedFilters.minimumRating)
+      ) {
+        setMinimumRating(parsedFilters.minimumRating)
+      }
+
+      if (
+        parsedFilters.maximumPrice === null ||
+        (typeof parsedFilters.maximumPrice === 'number' && Number.isFinite(parsedFilters.maximumPrice))
+      ) {
+        setMaximumPrice(parsedFilters.maximumPrice)
+      }
+
+      if (typeof parsedFilters.sortBy === 'string' && VALID_SORT_OPTIONS.includes(parsedFilters.sortBy)) {
+        setSortBy(parsedFilters.sortBy)
+      }
+    } catch (storageError) {
+      console.error('Kunne ikke lese lagrede filtre:', storageError)
+    } finally {
+      setHasRestoredFilters(true)
+    }
+  }, [])
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -55,7 +88,7 @@ export default function HomesView() {
         const ratingAccumulator = new Map<string, { total: number; count: number }>()
 
         reviewsSnapshot.forEach((docItem) => {
-          const data = docItem.data() as ReviewRecord
+          const data = docItem.data() as ReviewRecord & { housingId?: string }
           const housingId = data.housingId
 
           if (!housingId) {
@@ -104,29 +137,41 @@ export default function HomesView() {
   }, [])
 
   const maxAvailablePrice = useMemo(() => {
-    if (homes.length === 0) {
-      return 20000
-    }
-
-    return Math.max(...homes.map((home) => home.price))
+    return Math.max(8000, ...homes.map((home) => home.price))
   }, [homes])
-
-  useEffect(() => {
-    setMaximumPrice((previousMaximumPrice) => {
-      if (previousMaximumPrice === null) {
-        return maxAvailablePrice
-      }
-
-      return Math.min(previousMaximumPrice, maxAvailablePrice)
-    })
-  }, [maxAvailablePrice])
 
   const placeOptions = useMemo(
     () => Array.from(new Set(homes.map((home) => home.title))).sort((a, b) => a.localeCompare(b)),
     [homes],
   )
 
-  const effectiveMaximumPrice = maximumPrice ?? maxAvailablePrice
+  useEffect(() => {
+    if (!hasRestoredFilters) {
+      return
+    }
+
+    if (selectedPlace !== 'alle' && !placeOptions.includes(selectedPlace)) {
+      setSelectedPlace('alle')
+    }
+  }, [hasRestoredFilters, placeOptions, selectedPlace])
+
+  const effectiveMaximumPrice = Math.min(maximumPrice ?? maxAvailablePrice, maxAvailablePrice)
+
+  useEffect(() => {
+    if (!hasRestoredFilters) {
+      return
+    }
+
+    const filtersToStore: StoredHomesFilters = {
+      searchTerm,
+      selectedPlace,
+      minimumRating,
+      maximumPrice,
+      sortBy,
+    }
+
+    localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filtersToStore))
+  }, [hasRestoredFilters, maximumPrice, minimumRating, searchTerm, selectedPlace, sortBy])
 
   const filteredHomes = useMemo(() => {
     const normalizedSearchTerm = searchTerm.trim().toLowerCase()
@@ -174,7 +219,7 @@ export default function HomesView() {
   function resetFilters() {
     setSelectedPlace('alle')
     setMinimumRating('0')
-    setMaximumPrice(maxAvailablePrice)
+    setMaximumPrice(null)
     setSortBy('relevance')
   }
 

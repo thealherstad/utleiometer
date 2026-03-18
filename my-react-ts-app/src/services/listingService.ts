@@ -11,6 +11,9 @@ export type Listing = {
   price: number;
   notes: string;
   imageUrl?: string;
+  latitude?: number;
+  longitude?: number;
+  geoVerified?: boolean;
   createdAt: Timestamp;
 };
 
@@ -95,11 +98,14 @@ export async function getAllListings(): Promise<Listing[]> {
       listings.push({
         id: doc.id,
         address: data.address || "",
-        area: data.area || "",
         postalCode: data.postalCode || "",
+        poststed: data.poststed || "",
         city: data.city || "",
         notes: data.notes || "",
         imageUrl: data.imageUrl || "",
+        latitude: typeof data.latitude === "number" ? data.latitude : undefined,
+        longitude: typeof data.longitude === "number" ? data.longitude : undefined,
+        geoVerified: data.geoVerified === true,
         price: data.price ?? 0,
         createdAt: data.createdAt || Timestamp.now(),
       });

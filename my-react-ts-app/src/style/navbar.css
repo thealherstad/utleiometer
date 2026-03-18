@@ -4,7 +4,8 @@
   box-shadow: 0 1px 6px rgba(16,24,40,0.08);
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 2500;
+  isolation: isolate;
   font-size: clamp(1.125rem, 1.5vw, 1.375rem);
   transition: background-color 160ms ease, color 160ms ease;
 }

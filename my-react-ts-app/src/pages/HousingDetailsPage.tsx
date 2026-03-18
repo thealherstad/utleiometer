@@ -14,6 +14,7 @@ import { getAuth } from "firebase/auth";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import "../style/HousingDetailsPage.css";
 import Layout from "../components/Layout";
+import { calculateListingRating } from "../services/ratingService";
 
 type Review = {
   id: string;
@@ -22,6 +23,7 @@ type Review = {
   isAnonymous?: boolean;
   likes?: string[];
   likeCount?: number;
+  reports?: string[];
   overallScore?: number;
   overallNote?: string;
   priceScore?: number;
@@ -77,7 +79,11 @@ const HousingDetailsPage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
     setLoadingReviews(true);
-    const reviewsQuery = query(collection(db, "reviews"), where("housingId", "==", id));
+
+    const reviewsQuery = query(
+      collection(db, "reviews"),
+      where("housingId", "==", id)
+    );
 
     const unsubscribe = onSnapshot(
       reviewsQuery,
@@ -101,7 +107,15 @@ const HousingDetailsPage: React.FC = () => {
               }
 
               const likesArray: string[] = Array.isArray(data.likes)
-                ? data.likes.filter((uid: unknown): uid is string => typeof uid === "string")
+                ? data.likes.filter(
+                    (uid: unknown): uid is string => typeof uid === "string"
+                  )
+                : [];
+
+              const reportsArray: string[] = Array.isArray(data.reports)
+                ? data.reports.filter(
+                    (uid: unknown): uid is string => typeof uid === "string"
+                  )
                 : [];
 
               return {
@@ -111,6 +125,7 @@ const HousingDetailsPage: React.FC = () => {
                 isAnonymous,
                 likes: likesArray,
                 likeCount: likesArray.length,
+                reports: reportsArray,
                 overallScore: data.overallScore ?? 0,
                 overallNote: data.overallNote ?? "",
                 priceScore: data.priceScore ?? 0,
@@ -123,7 +138,10 @@ const HousingDetailsPage: React.FC = () => {
             })
           );
 
-          fetchedReviews.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
+          fetchedReviews.sort(
+            (a, b) => (b.likeCount || 0) - (a.likeCount || 0)
+          );
+
           setReviews(fetchedReviews);
         } catch (error) {
           console.error("Feil ved henting av anmeldelser:", error);
@@ -142,7 +160,7 @@ const HousingDetailsPage: React.FC = () => {
     return () => unsubscribe();
   }, [id]);
 
-  // Toggle like og lagre i Firestore
+  // Toggle like
   const toggleLike = async (reviewId: string) => {
     if (!currentUser) {
       alert("Du må være innlogget for å like en anmeldelse.");
@@ -154,7 +172,6 @@ const HousingDetailsPage: React.FC = () => {
     }
 
     setLikeInFlightIds((prev) => [...prev, reviewId]);
-
     setBounceIds([reviewId]);
 
     try {
@@ -165,10 +182,13 @@ const HousingDetailsPage: React.FC = () => {
 
       const reviewData = reviewSnapshot.data();
       const likesArray: string[] = Array.isArray(reviewData.likes)
-        ? reviewData.likes.filter((uid: unknown): uid is string => typeof uid === "string")
+        ? reviewData.likes.filter(
+            (uid: unknown): uid is string => typeof uid === "string"
+          )
         : [];
 
       const hasLiked = likesArray.includes(currentUser.uid);
+
       const nextLikes = hasLiked
         ? likesArray.filter((uid) => uid !== currentUser.uid)
         : [...likesArray, currentUser.uid];
@@ -176,12 +196,6 @@ const HousingDetailsPage: React.FC = () => {
       await updateDoc(reviewRef, { likes: nextLikes });
     } catch (error) {
       console.error("Kunne ikke oppdatere likes i Firestore:", error);
-      const errorCode = (error as { code?: string })?.code;
-      if (errorCode === "permission-denied") {
-        alert("Du har ikke tilgang til å like denne anmeldelsen med gjeldende Firestore-regler.");
-      } else {
-        alert("Kunne ikke oppdatere likes akkurat nå. Prøv igjen.");
-      }
     } finally {
       setLikeInFlightIds((prev) => prev.filter((id) => id !== reviewId));
     }
@@ -189,90 +203,195 @@ const HousingDetailsPage: React.FC = () => {
     setTimeout(() => setBounceIds([]), 600);
   };
 
+  // Toggle report
+  const toggleReport = async (reviewId: string) => {
+    if (!currentUser) {
+      alert("Du må være innlogget for å rapportere.");
+      return;
+    }
+
+    try {
+      const reviewRef = doc(db, "reviews", reviewId);
+      const reviewSnapshot = await getDoc(reviewRef);
+
+      if (!reviewSnapshot.exists()) return;
+
+      const reviewData = reviewSnapshot.data();
+
+      const reportsArray: string[] = Array.isArray(reviewData.reports)
+        ? reviewData.reports
+        : [];
+
+      const hasReported = reportsArray.includes(currentUser.uid);
+
+      const nextReports = hasReported
+        ? reportsArray.filter((uid) => uid !== currentUser.uid)
+        : [...reportsArray, currentUser.uid];
+
+      await updateDoc(reviewRef, { reports: nextReports });
+    } catch (error) {
+      console.error("Kunne ikke rapportere anmeldelse:", error);
+    }
+  };
+
   const handleAddReview = () => {
     if (!id) return;
     navigate(`/review/${id}`);
   };
 
+  const rating = calculateListingRating(reviews);
 
   return (
     <Layout>
-    <div className="housing-details-page">
-      {housing && (
-        <div className="housing-info">
-          {housing.imageUrl && <img src={housing.imageUrl} alt={housing.title || "Boligbilde"} className="housing-image" />}
-          <div className="housing-text">
-            <h1>{housing.title || "Boligdetaljer"}</h1>
-            <p><strong>Adresse:</strong> {housing.address || "Ikke tilgjengelig"}</p>
-            <p><strong>By:</strong> {housing.city || "Ukjent"}</p>
-            {housing.price !== undefined && <p><strong>Pris:</strong> {housing.price.toLocaleString()} kr/mnd</p>}
-          </div>
-        </div>
-      )}
+      <div className="housing-details-page">
+        {housing && (
+          <div className="housing-info">
+            {housing.imageUrl && (
+              <img
+                src={housing.imageUrl}
+                alt={housing.title || "Boligbilde"}
+                className="housing-image"
+              />
+            )}
 
-      <div className="housing-details-section">
-        <h2>Anmeldelser</h2>
-        {loadingReviews && <p className="loading-text">Laster anmeldelser...</p>}
-        {!loadingReviews && reviews.length === 0 && <p>Ingen anmeldelser ennå.</p>}
+            <div className="housing-text">
+              <h1>
+                {housing.title || "Adresse:"}{" "}
+                {housing.address || "Ikke tilgjengelig"}
+              </h1>
 
-        {!loadingReviews && reviews.length > 0 && (
-          <div className="reviews-list">
-            {reviews.map((review) => (
-              <div
-                key={review.id}
-                className={`review-card ${bounceIds.includes(review.id) ? "bounce" : ""}`}
-              >
-                <p className="review-user"><strong>Bruker:</strong> {review.userName}</p>
+              <p>
+                <strong>By:</strong> {housing.city || "Ukjent"}
+              </p>
 
-                <div className="review-field">
-                  <span><strong>Generelt:</strong> {review.overallScore}/5</span>
-                  {review.overallNote && <span className="review-note">Kommentar: {review.overallNote}</span>}
-                </div>
+              {housing.price !== undefined && (
+                <p>
+                  <strong>Pris:</strong>{" "}
+                  {housing.price.toLocaleString()} kr/mnd
+                </p>
+              )}
 
-                <div className="review-field">
-                  <span><strong>Pris:</strong> {review.priceScore}/5</span>
-                  {review.priceNote && <span className="review-note">Kommentar: {review.priceNote}</span>}
-                </div>
-
-                <div className="review-field">
-                  <span><strong>Plassering:</strong> {review.placementScore}/5</span>
-                  {review.placementNote && <span className="review-note">Kommentar: {review.placementNote}</span>}
-                </div>
-
-                <div className="review-field">
-                  <span><strong>Kostnader:</strong> {review.costScore}/5</span>
-                  {review.costNote && <span className="review-note">Kommentar: {review.costNote}</span>}
-                </div>
-
-                <div className="review-actions">
-                  {(() => {
-                    const hasLiked = review.likes?.includes(currentUser?.uid || "") || false;
-
-                    return (
-                      <>
-                  <span
-                    className={`heart ${hasLiked ? "liked" : ""}`}
-                    onClick={() => toggleLike(review.id)}
-                  >
-                    ♥
-                  </span>
-                  <span className="like-count">{review.likeCount || 0}</span>
-                      </>
-                    );
-                  })()}
-                </div>
-
-                <button className="report-button">Rapporter</button>
-              </div>
-            ))}
+              <p>
+                <strong>Rating:</strong>{" "}
+                {rating > 0 ? `${rating}` : "Ingen rating enda"}
+              </p>
+            </div>
           </div>
         )}
 
-        <button className="add-review-button" onClick={handleAddReview}>
-          Legg til anmeldelse
-        </button>
+        <div className="housing-details-section">
+          <h2>Anmeldelser</h2>
+
+          {loadingReviews && (
+            <p className="loading-text">Laster anmeldelser...</p>
+          )}
+
+          {!loadingReviews && reviews.length === 0 && (
+            <p>Ingen anmeldelser ennå.</p>
+          )}
+
+          {!loadingReviews && reviews.length > 0 && (
+            <div className="reviews-list">
+              {reviews.map((review) => {
+                const hasLiked =
+                  review.likes?.includes(currentUser?.uid || "") || false;
+
+                const isReported =
+                  review.reports?.includes(currentUser?.uid || "") || false;
+
+                return (
+                  <div
+                    key={review.id}
+                    className={`review-card ${
+                      bounceIds.includes(review.id) ? "bounce" : ""
+                    } ${isReported ? "reported" : ""}`}
+                  >
+                    <p className="review-user">
+                      <strong>Bruker:</strong> {review.userName}
+                    </p>
+
+                    <div className="review-field">
+                      <span>
+                        <strong>Generelt:</strong> {review.overallScore}/5
+                      </span>
+
+                      {review.overallNote && (
+                        <span className="review-note">
+                          Kommentar: {review.overallNote}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="review-field">
+                      <span>
+                        <strong>Pris:</strong> {review.priceScore}/5
+                      </span>
+
+                      {review.priceNote && (
+                        <span className="review-note">
+                          Kommentar: {review.priceNote}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="review-field">
+                      <span>
+                        <strong>Plassering:</strong>{" "}
+                        {review.placementScore}/5
+                      </span>
+
+                      {review.placementNote && (
+                        <span className="review-note">
+                          Kommentar: {review.placementNote}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="review-field">
+                      <span>
+                        <strong>Kostnader:</strong> {review.costScore}/5
+                      </span>
+
+                      {review.costNote && (
+                        <span className="review-note">
+                          Kommentar: {review.costNote}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="review-actions">
+                      <span
+                        className={`heart ${hasLiked ? "liked" : ""}`}
+                        onClick={() => toggleLike(review.id)}
+                      >
+                        ♥
+                      </span>
+
+                      <span className="like-count">
+                        {review.likeCount || 0}
+                      </span>
+                    </div>
+
+                    <button
+                      className="report-button"
+                      onClick={() => toggleReport(review.id)}
+                    >
+                      {isReported ? "Fjern rapportering" : "Rapporter"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <button
+            className="add-review-button"
+            onClick={handleAddReview}
+          >
+            Legg til anmeldelse
+          </button>
+        </div>
       </div>
-    </div>
     </Layout>
   );
 };
