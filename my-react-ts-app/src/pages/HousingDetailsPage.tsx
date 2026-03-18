@@ -63,7 +63,7 @@ const HousingDetailsPage: React.FC = () => {
     return () => unsubscribe();
   }, [auth]);
 
-  // Hent bolig
+  // Fetch listing
   useEffect(() => {
     if (!id) return;
     const fetchHousing = async () => {
@@ -75,7 +75,7 @@ const HousingDetailsPage: React.FC = () => {
     fetchHousing();
   }, [id]);
 
-  // Hent anmeldelser
+  // Fetch reviews
   useEffect(() => {
     if (!id) return;
     setLoadingReviews(true);

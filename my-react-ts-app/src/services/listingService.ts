@@ -1,7 +1,7 @@
 import { collection, addDoc, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "../firebase";
 
-// Type for bolig
+// Listing type
 export type Listing = {
   id: string;
   address: string;
@@ -49,7 +49,7 @@ async function hasDuplicateListing(address: string, postalCode: string): Promise
   });
 }
 
-// Funksjon for å lagre ny bolig til Firestore
+// Save a new listing to Firestore
 export async function saveListing(listingData: Omit<Listing, "id" | "createdAt">) {
   try {
     console.log("Prøver å lagre listing:", listingData);
@@ -86,7 +86,7 @@ export async function saveListing(listingData: Omit<Listing, "id" | "createdAt">
   }
 }
 
-// Funksjon for å hente alle boligene fra Firestore
+// Fetch all listings from Firestore
 export async function getAllListings(): Promise<Listing[]> {
   try {
     console.log("📥 Henter alle boligene fra Firestore...");
