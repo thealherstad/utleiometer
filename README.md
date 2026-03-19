@@ -5,6 +5,9 @@ Utleiometer is a web app for students who want to:
 - read and write reviews
 - explore housing in both list and map views
 
+## Use of AI
+Parts of this project were developed with assistance of AI tools. AI was primarily used to help suggest solutions to technical challenges and to improve overall code structure. All AI-generated content has been reviewed, tested and adapted by the team to ensure correctness and alignment with the project requirements.
+
 ## Requirements
 - Node.js 20+
 - npm 10+
@@ -92,3 +95,4 @@ src/
 
 ## Team
 Developed by Group 16.
+
